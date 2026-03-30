@@ -1,0 +1,12 @@
+id: plan-2026-03-cc-s3
+title: 'CC-S3: Computer Conversation + Notifications'
+type: feature
+status: planned
+created_at: '2026-03-29T22:41:51.572929'
+skills:
+- planning-with-pm
+goals:
+- Claude API chat interface with streaming
+- Notification center with acknowledge flow
+metadata:
+  pm_scope: story

@@ -1,0 +1,13 @@
+id: plan-2026-03-cc-s1
+title: 'CC-S1: Command Center Phase 0 — Scaffolding + A2A Backend'
+type: feature
+status: planned
+created_at: '2026-03-29T22:41:19.065110'
+skills:
+- planning-with-pm
+goals:
+- Deploy command.paircoder.ai with panel layout
+- Add feed and heartbeat endpoints to A2A
+- Define API contract for Unity Bridge
+metadata:
+  pm_scope: story

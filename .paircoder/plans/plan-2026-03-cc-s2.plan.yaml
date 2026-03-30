@@ -1,0 +1,13 @@
+id: plan-2026-03-cc-s2
+title: 'CC-S2: Activity Feed, Status Grid, Standup'
+type: feature
+status: planned
+created_at: '2026-03-29T22:41:41.120698'
+skills:
+- planning-with-pm
+goals:
+- Real-time activity feed with SSE
+- Agent status grid with live heartbeats
+- Metis standup view
+metadata:
+  pm_scope: story

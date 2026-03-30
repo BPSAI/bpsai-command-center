@@ -3,8 +3,10 @@ version: 2.18.2
 description: Real-time agent fleet operations interface
 project:
   name: Command Center
-  description: Real-time agent fleet operations interface — activity feed, agent status grid, Computer conversation, notifications, standup view
-  primary_goal: Define the API contract for the Bridge and provide daily operational visibility into the agent fleet
+  description: Real-time agent fleet operations interface — activity feed, agent status
+    grid, Computer conversation, notifications, standup view
+  primary_goal: Define the API contract for the Bridge and provide daily operational
+    visibility into the agent fleet
   coverage_target: 80
 workflow:
   default_branch_type: feature
@@ -56,9 +58,9 @@ routing:
     security: claude-opus-4-6
     architecture: claude-opus-4-6
 trello:
-  enabled: false
-  board_id: ''
-  board_name: ''
+  enabled: true
+  board_id: 69b9af7b7371e80c02fd826b
+  board_name: BPS Computer
   defaults:
     project: Command Center
     stack: React

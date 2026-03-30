@@ -1,0 +1,84 @@
+{
+  "timestamp": 1774838623.9179652,
+  "board_id": "69b9af7b7371e80c02fd826b",
+  "fields": {
+    "Project": {
+      "id": "69b9af7c7371e80c02fd8690",
+      "type": "list",
+      "options": {
+        "Aurora": "69b9af7c7371e80c02fd8692",
+        "CodexAgent-Trello": "69b9af7c7371e80c02fd8693",
+        "DanHil AP Invoices": "69b9af7c7371e80c02fd8694",
+        "DanHil RFQ": "69b9af7c7371e80c02fd8695",
+        "Prompt Acadamy": "69b9af7c7371e80c02fd8696",
+        "Weber SSRS Analysis": "69b9af7c7371e80c02fd8697",
+        "BPS A2A": "69b9b01e54a86f5838586259"
+      }
+    },
+    "Stack": {
+      "id": "69b9af7c7371e80c02fd86a7",
+      "type": "list",
+      "options": {
+        "React": "69b9af7c7371e80c02fd86a8",
+        "Flask": "69b9af7c7371e80c02fd86a9",
+        "Worker/Function": "69b9af7c7371e80c02fd86aa",
+        "Infra": "69b9af7c7371e80c02fd86ab",
+        "Collection": "69b9af7c7371e80c02fd86ac",
+        "Fast API": "69ba1a432e870b9bfdd78b6b"
+      }
+    },
+    "Status": {
+      "id": "69b9af7c7371e80c02fd8699",
+      "type": "list",
+      "options": {
+        "Planning": "69b9af7c7371e80c02fd869a",
+        "In progress": "69b9af7c7371e80c02fd869b",
+        "Testing": "69b9af7c7371e80c02fd869c",
+        "Done": "69b9af7c7371e80c02fd869d",
+        "Enqueued": "69b9af7c7371e80c02fd869e",
+        "Waiting": "69b9af7c7371e80c02fd869f",
+        "Blocked": "69b9af7c7371e80c02fd86a0"
+      }
+    },
+    "Effort": {
+      "id": "69b9af7c7371e80c02fd86ad",
+      "type": "list",
+      "options": {
+        "S": "69b9af7c7371e80c02fd86ae",
+        "M": "69b9af7c7371e80c02fd86af",
+        "L": "69b9af7c7371e80c02fd86b0"
+      }
+    },
+    "Adjusted Effort": {
+      "id": "69b9af7c7371e80c02fd86a3",
+      "type": "list",
+      "options": {
+        "S": "69b9af7c7371e80c02fd86a4",
+        "M": "69b9af7c7371e80c02fd86a5",
+        "L": "69b9af7c7371e80c02fd86a6"
+      }
+    },
+    "Adjusted Effort Notes": {
+      "id": "69b9af7c7371e80c02fd8698",
+      "type": "text",
+      "options": null
+    },
+    "Agent Task": {
+      "id": "69b9af7c7371e80c02fd86b1",
+      "type": "checkbox",
+      "options": null
+    },
+    "Deployment Tag": {
+      "id": "69b9af7c7371e80c02fd86a1",
+      "type": "text",
+      "options": null
+    },
+    "Repo URL": {
+      "id": "69b9af7c7371e80c02fd86a2",
+      "type": "list",
+      "options": {
+        "https://github.com/BPSAI/bps-a2a.git": "69b9afa5cd1bf6231698a679"
+      }
+    }
+  }
+}
