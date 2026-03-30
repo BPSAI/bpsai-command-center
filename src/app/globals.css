@@ -91,7 +91,7 @@ body {
 /* Floating detail hologram — 3D hover panel */
 .detail-hologram {
   width: 400px;
-  max-width: 40vw;
+  max-width: min(400px, 90vw);
   padding: 14px 16px;
   background: linear-gradient(
     145deg,
@@ -167,6 +167,25 @@ body {
   to {
     opacity: 0;
     transform: perspective(800px) rotateX(-4deg) translateZ(5px) scale(0.97);
+  }
+}
+
+/* Hide scrollbar for mobile tab bar */
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .detail-hologram {
+    position: fixed !important;
+    left: 5vw !important;
+    right: 5vw !important;
+    bottom: 10px !important;
+    top: auto !important;
+    width: auto !important;
+    max-width: none !important;
+    transform: perspective(800px) rotateX(-2deg) translateZ(20px);
+    transform-origin: bottom center;
   }
 }
 

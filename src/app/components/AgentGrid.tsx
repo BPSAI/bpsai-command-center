@@ -100,7 +100,7 @@ export default function AgentGrid() {
           {agents.length} agents
         </span>
       </div>
-      <div className="panel-body grid grid-cols-2 gap-2 auto-rows-min">
+      <div className="panel-body grid grid-cols-1 sm:grid-cols-2 gap-2 auto-rows-min">
         {loading && agents.length === 0 && (
           <div className="col-span-2 text-foreground/30 text-xs text-center py-4">
             Loading agents...
