@@ -1,8 +1,10 @@
+project_name: bpsai-command-center
 version: 2.18.2
+description: Real-time agent fleet operations interface
 project:
-  name: My Project
-  description: My Project project
-  primary_goal: Build awesome software
+  name: Command Center
+  description: Real-time agent fleet operations interface — activity feed, agent status grid, Computer conversation, notifications, standup view
+  primary_goal: Define the API contract for the Bridge and provide daily operational visibility into the agent fleet
   coverage_target: 80
 workflow:
   default_branch_type: feature
@@ -58,9 +60,9 @@ trello:
   board_id: ''
   board_name: ''
   defaults:
-    project: My Project
-    stack: Worker/Function
-    repo_url: ''
+    project: Command Center
+    stack: React
+    repo_url: https://github.com/BPSAI/bpsai-command-center
   board_structure:
     lists:
     - name: Intake/Backlog
