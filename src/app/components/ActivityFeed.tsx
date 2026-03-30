@@ -40,18 +40,81 @@ function formatTime(ts: string): string {
   }
 }
 
-function parseDispatchResult(content: string): { success: boolean; output: string; summary: string } | null {
+function shortId(id: string): string {
+  return id.slice(0, 8);
+}
+
+/** Parse dispatch content — structured JSON or plain text */
+function parseDispatch(content: string): { agent: string; target: string; prompt: string } | null {
+  try {
+    const parsed = JSON.parse(content);
+    if ("agent" in parsed && "target" in parsed && "prompt" in parsed) {
+      return parsed;
+    }
+  } catch { /* plain text */ }
+  return null;
+}
+
+/** Parse dispatch-result content */
+function parseDispatchResult(content: string): {
+  success: boolean;
+  output: string;
+  dispatchId: string;
+} | null {
   try {
     const parsed = JSON.parse(content);
     if ("success" in parsed && "output" in parsed) {
-      const output = parsed.output ?? "";
-      const summary = parsed.success
-        ? `Dispatch complete: ${output.slice(0, 120)}${output.length > 120 ? "..." : ""}`
-        : `Dispatch failed: ${output.slice(0, 120)}${output.length > 120 ? "..." : ""}`;
-      return { success: parsed.success, output, summary };
+      return {
+        success: parsed.success,
+        output: parsed.output ?? "",
+        dispatchId: parsed.dispatch_id ?? "",
+      };
     }
   } catch { /* not JSON */ }
   return null;
+}
+
+/** Render human-readable content for a message */
+function renderContent(msg: FeedMessage): {
+  summary: string;
+  detail: string | null;
+  color: string;
+} {
+  // Dispatch command
+  if (msg.type === "dispatch") {
+    const parsed = parseDispatch(msg.content);
+    if (parsed) {
+      return {
+        summary: `Dispatch ${parsed.agent} → ${parsed.target}: ${parsed.prompt}`,
+        detail: `Agent: ${parsed.agent}\nTarget: ${parsed.target}\nPrompt: ${parsed.prompt}`,
+        color: "text-accent",
+      };
+    }
+    return { summary: msg.content, detail: null, color: "text-accent" };
+  }
+
+  // Dispatch result
+  if (msg.type === "dispatch-result") {
+    const parsed = parseDispatchResult(msg.content);
+    if (parsed) {
+      const refId = parsed.dispatchId ? ` [${shortId(parsed.dispatchId)}]` : "";
+      return {
+        summary: parsed.success
+          ? `Dispatch complete${refId}`
+          : `Dispatch failed${refId}`,
+        detail: parsed.output,
+        color: parsed.success ? "text-success" : "text-danger",
+      };
+    }
+    return { summary: msg.content, detail: null, color: "text-foreground/60" };
+  }
+
+  // Everything else
+  return {
+    summary: msg.content,
+    detail: null,
+    color: SEVERITY_TEXT[msg.severity] ?? "text-foreground/60",
+  };
 }
 
 export default function ActivityFeed() {
@@ -60,7 +123,8 @@ export default function ActivityFeed() {
   const [filterProject, setFilterProject] = useState("");
   const [filterAgent, setFilterAgent] = useState("");
   const [filterSeverity, setFilterSeverity] = useState("");
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [hoverPos, setHoverPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -72,7 +136,6 @@ export default function ActivityFeed() {
       try {
         const data = JSON.parse(event.data);
         if (data.type === "messages" && data.messages) {
-          // A2A response: {messages: {messages: [...], cursor, has_more}}
           const raw = data.messages.messages ?? data.messages;
           if (!Array.isArray(raw)) return;
           const mapped: FeedMessage[] = raw.map((m: Record<string, string>) => ({
@@ -92,7 +155,10 @@ export default function ActivityFeed() {
             const existingIds = new Set(prev.map((m) => m.id));
             const newMsgs = mapped.filter((m) => !existingIds.has(m.id));
             if (newMsgs.length === 0) return prev;
-            return [...newMsgs, ...prev].slice(0, 200);
+            // Sort newest first
+            const all = [...prev, ...newMsgs];
+            all.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+            return all.slice(0, 200);
           });
         }
       } catch {
@@ -104,15 +170,6 @@ export default function ActivityFeed() {
 
     return () => es.close();
   }, []);
-
-  const scrollToTop = useCallback(() => {
-    scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
-
-  // Auto-scroll to top when new messages arrive
-  useEffect(() => {
-    scrollToTop();
-  }, [messages.length, scrollToTop]);
 
   const projects = [...new Set(messages.map((m) => m.project).filter(Boolean))];
   const agents = [
@@ -128,6 +185,20 @@ export default function ActivityFeed() {
     if (filterSeverity && m.severity !== filterSeverity) return false;
     return true;
   });
+
+  const handleMouseEnter = useCallback((e: React.MouseEvent, id: string, detail: string | null) => {
+    if (!detail) return;
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setHoverPos({ x: rect.right + 12, y: rect.top });
+    setHoveredId(id);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setHoveredId(null);
+  }, []);
+
+  const hoveredMsg = hoveredId ? filtered.find((m) => m.id === hoveredId) : null;
+  const hoveredDetail = hoveredMsg ? renderContent(hoveredMsg).detail : null;
 
   return (
     <>
@@ -193,14 +264,15 @@ export default function ActivityFeed() {
           </div>
         )}
         {filtered.map((msg) => {
-          const dispatchResult = msg.type === "dispatch-result" ? parseDispatchResult(msg.content) : null;
-          const isExpanded = expandedId === msg.id;
+          const rendered = renderContent(msg);
+          const hasDetail = rendered.detail !== null;
 
           return (
             <div
               key={msg.id}
-              className={`py-1.5 border-b border-panel-border/30 last:border-0 ${dispatchResult ? "cursor-pointer hover:bg-panel-border/10" : ""}`}
-              onClick={() => dispatchResult && setExpandedId(isExpanded ? null : msg.id)}
+              className={`py-1.5 border-b border-panel-border/30 last:border-0 ${hasDetail ? "cursor-pointer" : ""}`}
+              onMouseEnter={(e) => handleMouseEnter(e, msg.id, rendered.detail)}
+              onMouseLeave={handleMouseLeave}
             >
               <div className="flex gap-3 items-start">
                 <span className="text-[10px] text-foreground/30 shrink-0 tabular-nums pt-0.5">
@@ -224,32 +296,39 @@ export default function ActivityFeed() {
                     {msg.type && (
                       <span className="ml-2 text-foreground/20">[{msg.type}]</span>
                     )}
-                    {dispatchResult && (
-                      <span className="ml-2 text-foreground/20 text-[9px]">
-                        {isExpanded ? "▼" : "▶"}
-                      </span>
-                    )}
+                    <span className="ml-2 text-foreground/15 text-[9px]">
+                      {shortId(msg.id)}
+                    </span>
                   </div>
-                  <div
-                    className={`text-xs ${dispatchResult ? "" : "truncate"} ${
-                      dispatchResult
-                        ? dispatchResult.success ? "text-success" : "text-danger"
-                        : SEVERITY_TEXT[msg.severity] ?? "text-foreground/60"
-                    }`}
-                  >
-                    {dispatchResult ? dispatchResult.summary : msg.content}
+                  <div className={`text-xs ${rendered.color}`}>
+                    {rendered.summary}
                   </div>
                 </div>
               </div>
-              {dispatchResult && isExpanded && (
-                <div className="mt-2 ml-[72px] mr-2 p-2 bg-background/50 border border-panel-border/30 rounded text-[11px] text-foreground/70 whitespace-pre-wrap max-h-64 overflow-y-auto">
-                  {dispatchResult.output}
-                </div>
-              )}
             </div>
           );
         })}
       </div>
+
+      {/* Floating detail panel — 3D hover effect */}
+      {hoveredId && hoveredDetail && (
+        <div
+          className="detail-hologram"
+          style={{
+            position: "fixed",
+            left: Math.min(hoverPos.x, window.innerWidth - 420),
+            top: Math.max(hoverPos.y - 20, 10),
+            zIndex: 100,
+          }}
+        >
+          <div className="text-[10px] text-accent/80 uppercase tracking-wider mb-2 font-semibold">
+            Detail — {shortId(hoveredId)}
+          </div>
+          <div className="text-[11px] text-foreground/80 whitespace-pre-wrap leading-relaxed max-h-80 overflow-y-auto">
+            {hoveredDetail}
+          </div>
+        </div>
+      )}
     </>
   );
 }
