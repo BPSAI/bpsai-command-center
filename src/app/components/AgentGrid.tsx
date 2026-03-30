@@ -63,7 +63,13 @@ export default function AgentGrid() {
         if (!res.ok) throw new Error(`Status ${res.status}`);
         const data = await res.json();
         if (!active) return;
-        const list = Array.isArray(data) ? data : data.agents ?? [];
+        const raw = Array.isArray(data) ? data : data.agents ?? [];
+        const list = raw.map((a: Record<string, string | null>) => ({
+          name: a.name,
+          state: a.state,
+          currentTask: a.current_task ?? a.currentTask ?? null,
+          lastActive: a.last_active ?? a.lastActive ?? "",
+        }));
         setAgents(list);
         setError(null);
       } catch (err) {
