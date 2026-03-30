@@ -1,3 +1,6 @@
+import ActivityFeed from "@/app/components/ActivityFeed";
+import AgentGrid from "@/app/components/AgentGrid";
+
 export default function Home() {
   return (
     <div className="flex flex-col h-screen p-3 gap-3">
@@ -19,33 +22,12 @@ export default function Home() {
       <div className="flex-1 grid grid-cols-3 grid-rows-2 gap-3 min-h-0">
         {/* Activity Feed — tall left column */}
         <div className="panel row-span-2">
-          <div className="panel-header">
-            <span className="status-dot" />
-            Activity Feed
-          </div>
-          <div className="panel-body">
-            <FeedItem time="14:32:01" text="paircoder-bot deployed to staging" kind="success" />
-            <FeedItem time="14:31:45" text="Agent claude-nav completed plan review" kind="info" />
-            <FeedItem time="14:30:12" text="Build #847 passed — bpsai-agents" kind="success" />
-            <FeedItem time="14:28:55" text="PR #42 merged → bpsai-support/main" kind="info" />
-            <FeedItem time="14:27:30" text="Memory limit warning on worker-3" kind="warning" />
-            <FeedItem time="14:25:01" text="Trello card TRELLO-19 moved to Done" kind="info" />
-            <FeedItem time="14:22:18" text="Agent driver-01 idle — awaiting task" kind="dim" />
-          </div>
+          <ActivityFeed />
         </div>
 
         {/* Agent Grid */}
         <div className="panel">
-          <div className="panel-header">
-            <span className="status-dot" />
-            Agent Grid
-          </div>
-          <div className="panel-body grid grid-cols-2 gap-2">
-            <AgentCard name="Navigator" status="active" task="Plan review" />
-            <AgentCard name="Driver" status="idle" task="—" />
-            <AgentCard name="Reviewer" status="active" task="PR #42" />
-            <AgentCard name="QC" status="standby" task="—" />
-          </div>
+          <AgentGrid />
         </div>
 
         {/* Computer Chat */}
@@ -113,34 +95,6 @@ export default function Home() {
   );
 }
 
-function FeedItem({ time, text, kind }: { time: string; text: string; kind: string }) {
-  const colors: Record<string, string> = {
-    success: "text-success",
-    warning: "text-warning",
-    info: "text-accent",
-    dim: "text-foreground/30",
-  };
-  return (
-    <div className="flex gap-3 py-1.5 border-b border-panel-border/30 last:border-0">
-      <span className="text-xs text-foreground/30 shrink-0 tabular-nums">{time}</span>
-      <span className={`text-xs ${colors[kind] ?? "text-foreground/60"}`}>{text}</span>
-    </div>
-  );
-}
-
-function AgentCard({ name, status, task }: { name: string; status: string; task: string }) {
-  const statusColor =
-    status === "active" ? "bg-success" : status === "idle" ? "bg-warning" : "bg-foreground/20";
-  return (
-    <div className="border border-panel-border rounded p-2 text-xs">
-      <div className="flex items-center gap-1.5 mb-1">
-        <span className={`w-2 h-2 rounded-full ${statusColor}`} />
-        <span className="text-accent font-semibold">{name}</span>
-      </div>
-      <div className="text-foreground/50">{task}</div>
-    </div>
-  );
-}
 
 function ChatBubble({ from, text }: { from: string; text: string }) {
   return (
