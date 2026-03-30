@@ -1,6 +1,38 @@
 {
   "T1.9": {
-    "last_cli_update": "2026-03-30T09:12:32.592562",
-    "last_status": "in_progress"
+    "last_cli_update": "2026-03-30T16:47:47.563325",
+    "last_status": "done"
+  },
+  "T1.1": {
+    "last_cli_update": "2026-03-30T16:47:39.989217",
+    "last_status": "done"
+  },
+  "T1.2": {
+    "last_cli_update": "2026-03-30T16:47:42.516609",
+    "last_status": "done"
+  },
+  "T1.3": {
+    "last_cli_update": "2026-03-30T16:47:45.173173",
+    "last_status": "done"
+  },
+  "T1.4": {
+    "last_cli_update": "2026-03-30T16:47:49.932783",
+    "last_status": "done"
+  },
+  "T1.5": {
+    "last_cli_update": "2026-03-30T16:47:52.214284",
+    "last_status": "done"
+  },
+  "T1.8": {
+    "last_cli_update": "2026-03-30T16:47:54.475534",
+    "last_status": "done"
+  },
+  "T1.6": {
+    "last_cli_update": "2026-03-30T16:47:56.726785",
+    "last_status": "done"
+  },
+  "T1.7": {
+    "last_cli_update": "2026-03-30T16:47:58.984901",
+    "last_status": "done"
   }
 }

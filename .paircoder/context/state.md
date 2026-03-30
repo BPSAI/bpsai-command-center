@@ -28,6 +28,24 @@ Tasks deprioritized for later work will appear here.
 
 ## What Was Just Done
 
+- **T1.7 done** (auto-updated by hook)
+
+- **T1.6 done** (auto-updated by hook)
+
+- **T1.8 done** (auto-updated by hook)
+
+- **T1.5 done** (auto-updated by hook)
+
+- **T1.4 done** (auto-updated by hook)
+
+- **T1.9 done** (auto-updated by hook)
+
+- **T1.3 done** (auto-updated by hook)
+
+- **T1.2 done** (auto-updated by hook)
+
+- **T1.1 done** (auto-updated by hook)
+
 ### Session: 2026-03-30 — Panel Layout + Ship Theme (T1.9)
 
 - Implemented 5-panel grid layout: Activity Feed, Agent Grid, Computer Chat, Notifications, Standup

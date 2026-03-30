@@ -1,8 +1,16 @@
 {
-  "_active": {
-    "task_id": "T1.9",
-    "timer_id": "local-20260330091232",
-    "description": "T1.9: Panel layout + ship theme (5 resizable panels, dark aesthetic)",
-    "start": "2026-03-30T09:12:32.757932"
+  "T1.9": {
+    "entries": [
+      {
+        "id": "local-20260330091232",
+        "task_id": "T1.9",
+        "description": "T1.9: Panel layout + ship theme (5 resizable panels, dark aesthetic)",
+        "start": "2026-03-30T09:12:32.757932",
+        "end": "2026-03-30T16:47:48.066812",
+        "duration_seconds": 27315.30888,
+        "provider_id": null
+      }
+    ],
+    "total_seconds": 27315.30888
   }
 }
