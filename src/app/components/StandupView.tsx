@@ -2,24 +2,58 @@
 
 import { useEffect, useState, useCallback } from "react";
 
-interface StandupData {
-  engagement?: string;
-  mood?: string;
-  beliefs?: { label: string; confidence: number }[];
-  recentActivity?: { text: string; timestamp: string }[];
+interface MetisMessage {
+  id: string;
+  type: string;
+  from_project: string;
+  content: string;
+  severity: string;
+  created_at: string;
 }
 
+function formatTime(ts: string): string {
+  try {
+    const d = new Date(ts);
+    return d.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return ts;
+  }
+}
+
+function formatDate(ts: string): string {
+  try {
+    const d = new Date(ts);
+    return d.toLocaleDateString("en-GB", {
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return ts;
+  }
+}
+
+const TYPE_LABELS: Record<string, { label: string; color: string }> = {
+  briefing: { label: "BRIEFING", color: "text-accent" },
+  "hypothesis-update": { label: "HYPOTHESIS", color: "text-warning" },
+  "cycle-complete": { label: "CYCLE", color: "text-success" },
+  "standup": { label: "STANDUP", color: "text-accent" },
+};
+
 export default function StandupView() {
-  const [data, setData] = useState<StandupData | null>(null);
+  const [messages, setMessages] = useState<MetisMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchStandup = useCallback(async () => {
+  const fetchMetisMessages = useCallback(async () => {
     try {
-      const res = await fetch("/api/standup");
+      const res = await fetch("/api/metis?limit=20");
       if (!res.ok) throw new Error(`Status ${res.status}`);
       const json = await res.json();
-      setData(json);
+      const raw = json.messages ?? [];
+      setMessages(raw);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch");
@@ -29,106 +63,82 @@ export default function StandupView() {
   }, []);
 
   useEffect(() => {
-    fetchStandup();
-    const interval = setInterval(fetchStandup, 5 * 60 * 1000);
-
-    const handleFocus = () => fetchStandup();
+    fetchMetisMessages();
+    const interval = setInterval(fetchMetisMessages, 5 * 60 * 1000);
+    const handleFocus = () => fetchMetisMessages();
     window.addEventListener("focus", handleFocus);
-
     return () => {
       clearInterval(interval);
       window.removeEventListener("focus", handleFocus);
     };
-  }, [fetchStandup]);
+  }, [fetchMetisMessages]);
 
   return (
     <>
       <div className="panel-header">
         <span className="status-dot" />
-        Standup
-        <span className="ml-auto text-foreground/30 text-[10px] font-normal normal-case tracking-normal">
-          {loading ? "LOADING" : error ? "ERROR" : "OK"}
-        </span>
+        Metis Standup
+        <a
+          href="https://agentlounge.ai/standup"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ml-auto text-accent/50 hover:text-accent text-[10px] font-normal normal-case tracking-normal"
+        >
+          Full Dashboard &rarr;
+        </a>
       </div>
-      <div className="panel-body text-sm">
-        {loading && !data && (
+      <div className="panel-body">
+        {loading && messages.length === 0 && (
           <div className="text-foreground/30 text-xs text-center py-4">
-            Loading standup data...
+            Loading Metis activity...
           </div>
         )}
-        {error && !data && (
+        {error && messages.length === 0 && (
           <div className="text-danger text-xs text-center py-4">{error}</div>
         )}
-        {data && (
-          <>
-            {/* Current Engagement */}
-            <div className="mb-3">
-              <div className="text-accent text-xs mb-1">ENGAGEMENT</div>
-              <div className="text-foreground/70 text-xs">
-                {data.engagement ?? "No active engagement"}
-              </div>
-            </div>
-
-            {/* Mood Summary */}
-            <div className="mb-3">
-              <div className="text-accent text-xs mb-1">MOOD</div>
-              <div className="text-foreground/70 text-xs">
-                {data.mood ?? "Neutral"}
-              </div>
-            </div>
-
-            {/* Active Beliefs */}
-            <div className="mb-3">
-              <div className="text-accent text-xs mb-1">ACTIVE BELIEFS</div>
-              {data.beliefs && data.beliefs.length > 0 ? (
-                <div className="space-y-1">
-                  {data.beliefs.map((b, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-2 text-xs text-foreground/70"
+        {!loading && !error && messages.length === 0 && (
+          <div className="text-foreground/30 text-xs text-center py-4">
+            No Metis messages in channel yet.
+            <br />
+            <a
+              href="https://agentlounge.ai/standup"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent/50 hover:text-accent"
+            >
+              View full standup on Agent Lounge &rarr;
+            </a>
+          </div>
+        )}
+        {messages.length > 0 && (
+          <div className="space-y-2">
+            {messages.map((msg) => {
+              const typeInfo = TYPE_LABELS[msg.type] ?? {
+                label: msg.type.toUpperCase(),
+                color: "text-foreground/50",
+              };
+              return (
+                <div
+                  key={msg.id}
+                  className="border-b border-panel-border/30 pb-2 last:border-0"
+                >
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span
+                      className={`text-[9px] font-semibold uppercase ${typeInfo.color}`}
                     >
-                      <div className="flex-1 truncate">{b.label}</div>
-                      <div className="shrink-0 w-16 bg-panel-border/30 rounded-full h-1.5">
-                        <div
-                          className="bg-accent h-1.5 rounded-full"
-                          style={{ width: `${Math.round(b.confidence * 100)}%` }}
-                        />
-                      </div>
-                      <span className="text-[10px] text-foreground/40 w-8 text-right">
-                        {Math.round(b.confidence * 100)}%
-                      </span>
-                    </div>
-                  ))}
+                      {typeInfo.label}
+                    </span>
+                    <span className="text-[10px] text-foreground/25">
+                      {formatDate(msg.created_at)} {formatTime(msg.created_at)}
+                    </span>
+                  </div>
+                  <div className="text-xs text-foreground/70 leading-relaxed">
+                    {msg.content}
+                  </div>
                 </div>
-              ) : (
-                <div className="text-foreground/40 text-xs">
-                  No active beliefs
-                </div>
-              )}
-            </div>
-
-            {/* Recent Activity */}
-            <div>
-              <div className="text-accent text-xs mb-1">RECENT ACTIVITY</div>
-              {data.recentActivity && data.recentActivity.length > 0 ? (
-                <ul className="space-y-1">
-                  {data.recentActivity.slice(0, 5).map((a, i) => (
-                    <li
-                      key={i}
-                      className="text-xs text-foreground/70 flex gap-2"
-                    >
-                      <span className="text-foreground/30 shrink-0">•</span>
-                      <span className="truncate">{a.text}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="text-foreground/40 text-xs">
-                  No recent activity
-                </div>
-              )}
-            </div>
-          </>
+              );
+            })}
+          </div>
         )}
       </div>
     </>

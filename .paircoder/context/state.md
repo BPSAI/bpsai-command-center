@@ -4,13 +4,13 @@
 
 ## Active Plan
 
-**Plan:** None yet
-**Status:** Ready to start
-**Current Sprint:** N/A
+**Plan:** plan-2026-03-cc-s1
+**Status:** In progress
+**Current Sprint:** S1
 
 ## Current Focus
 
-Project initialized with PairCoder v2. Ready to create first plan.
+Panel layout and ship theme implemented. Moving to next task.
 
 ## Task Status
 
@@ -28,13 +28,18 @@ Tasks deprioritized for later work will appear here.
 
 ## What Was Just Done
 
+### Session: 2026-03-30 — Panel Layout + Ship Theme (T1.9)
+
+- Implemented 5-panel grid layout: Activity Feed, Agent Grid, Computer Chat, Notifications, Standup
+- Dark sci-fi "ship bridge" theme with cyan accents, pulsing status dots, scanline overlay
+- Updated globals.css (theme tokens, panel classes, animations), layout.tsx (metadata, mono font), page.tsx (full panel layout with placeholder content)
+- Build verified, committed and pushed to main
+
 ### Session: <!-- Date --> - Project Initialization
 
 - Initialized project with PairCoder v2
 - Created `.paircoder/` directory structure
 - Set up initial configuration
-
-<!-- Add new session entries here as you complete work -->
 
 ## What's Next
 
