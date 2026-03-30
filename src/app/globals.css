@@ -155,6 +155,21 @@ body {
   }
 }
 
+.detail-hologram-out {
+  animation: hologram-out 0.2s ease-in forwards;
+}
+
+@keyframes hologram-out {
+  from {
+    opacity: 1;
+    transform: perspective(800px) rotateX(2deg) translateZ(20px) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: perspective(800px) rotateX(-4deg) translateZ(5px) scale(0.97);
+  }
+}
+
 /* Scanline overlay */
 .scanlines::after {
   content: "";

@@ -124,8 +124,11 @@ export default function ActivityFeed() {
   const [filterAgent, setFilterAgent] = useState("");
   const [filterSeverity, setFilterSeverity] = useState("");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [dismissingId, setDismissingId] = useState<string | null>(null);
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const scrollRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const dismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const es = new EventSource("/api/feed");
@@ -188,17 +191,39 @@ export default function ActivityFeed() {
 
   const handleMouseEnter = useCallback((e: React.MouseEvent, id: string, detail: string | null) => {
     if (!detail) return;
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    setHoverPos({ x: rect.right + 12, y: rect.top });
+    if (dismissTimer.current) {
+      clearTimeout(dismissTimer.current);
+      dismissTimer.current = null;
+    }
+    setDismissingId(null);
+    // Position relative to the panel, not the viewport
+    const row = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const panel = panelRef.current?.getBoundingClientRect();
+    if (panel) {
+      // Center horizontally over the panel, below the hovered row
+      setHoverPos({
+        x: panel.left + panel.width / 2 - 200, // 200 = half of 400px width
+        y: row.bottom + 8,
+      });
+    } else {
+      setHoverPos({ x: row.left, y: row.bottom + 8 });
+    }
     setHoveredId(id);
   }, []);
 
   const handleMouseLeave = useCallback(() => {
-    setHoveredId(null);
-  }, []);
+    if (hoveredId) {
+      setDismissingId(hoveredId);
+      dismissTimer.current = setTimeout(() => {
+        setHoveredId(null);
+        setDismissingId(null);
+      }, 200); // match animation duration
+    }
+  }, [hoveredId]);
 
-  const hoveredMsg = hoveredId ? filtered.find((m) => m.id === hoveredId) : null;
-  const hoveredDetail = hoveredMsg ? renderContent(hoveredMsg).detail : null;
+  const activeId = hoveredId ?? dismissingId;
+  const activeMsg = activeId ? filtered.find((m) => m.id === activeId) : null;
+  const activeDetail = activeMsg ? renderContent(activeMsg).detail : null;
 
   return (
     <>
@@ -255,7 +280,7 @@ export default function ActivityFeed() {
       </div>
 
       {/* Messages */}
-      <div className="panel-body" ref={scrollRef}>
+      <div className="panel-body" ref={(el) => { scrollRef.current = el; panelRef.current = el; }}>
         {filtered.length === 0 && (
           <div className="text-foreground/30 text-xs text-center py-4">
             {messages.length === 0
@@ -311,21 +336,21 @@ export default function ActivityFeed() {
       </div>
 
       {/* Floating detail panel — 3D hover effect */}
-      {hoveredId && hoveredDetail && (
+      {activeId && activeDetail && (
         <div
-          className="detail-hologram"
+          className={dismissingId ? "detail-hologram detail-hologram-out" : "detail-hologram"}
           style={{
             position: "fixed",
-            left: Math.min(hoverPos.x, window.innerWidth - 420),
-            top: Math.max(hoverPos.y - 20, 10),
+            left: Math.max(10, Math.min(hoverPos.x, (typeof window !== "undefined" ? window.innerWidth : 1200) - 420)),
+            top: Math.max(10, Math.min(hoverPos.y, (typeof window !== "undefined" ? window.innerHeight : 800) - 300)),
             zIndex: 100,
           }}
         >
           <div className="text-[10px] text-accent/80 uppercase tracking-wider mb-2 font-semibold">
-            Detail — {shortId(hoveredId)}
+            Detail — {shortId(activeId)}
           </div>
           <div className="text-[11px] text-foreground/80 whitespace-pre-wrap leading-relaxed max-h-80 overflow-y-auto">
-            {hoveredDetail}
+            {activeDetail}
           </div>
         </div>
       )}
