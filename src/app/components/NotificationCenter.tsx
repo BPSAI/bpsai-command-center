@@ -56,10 +56,27 @@ export default function NotificationCenter() {
     es.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.type === "messages" && Array.isArray(data.messages)) {
-          const actionable: Notification[] = data.messages
+        if (data.type === "messages" && data.messages) {
+          const raw = data.messages.messages ?? data.messages;
+          if (!Array.isArray(raw)) return;
+
+          const mapped: FeedMessage[] = raw.map((m: Record<string, string>) => ({
+            id: m.id,
+            timestamp: m.created_at,
+            from: m.from_project,
+            to: m.to_project,
+            type: m.type,
+            content: m.content,
+            severity: m.severity === "critical" || m.severity === "high" ? "error"
+              : m.severity === "medium" ? "warning"
+              : m.severity === "low" ? "success"
+              : "info",
+            project: m.from_project,
+          }));
+
+          const actionable: Notification[] = mapped
             .filter(isActionable)
-            .map((m: FeedMessage) => ({ ...m, acknowledged: false }));
+            .map((m) => ({ ...m, acknowledged: false }));
 
           if (actionable.length === 0) return;
 
@@ -92,7 +109,7 @@ export default function NotificationCenter() {
       await fetch("https://a2a.paircoder.ai/messages/ack", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ message_id: id }),
       });
     } catch {
       // Revert on failure

@@ -40,12 +40,27 @@ function formatTime(ts: string): string {
   }
 }
 
+function parseDispatchResult(content: string): { success: boolean; output: string; summary: string } | null {
+  try {
+    const parsed = JSON.parse(content);
+    if ("success" in parsed && "output" in parsed) {
+      const output = parsed.output ?? "";
+      const summary = parsed.success
+        ? `Dispatch complete: ${output.slice(0, 120)}${output.length > 120 ? "..." : ""}`
+        : `Dispatch failed: ${output.slice(0, 120)}${output.length > 120 ? "..." : ""}`;
+      return { success: parsed.success, output, summary };
+    }
+  } catch { /* not JSON */ }
+  return null;
+}
+
 export default function ActivityFeed() {
   const [messages, setMessages] = useState<FeedMessage[]>([]);
   const [connected, setConnected] = useState(false);
   const [filterProject, setFilterProject] = useState("");
   const [filterAgent, setFilterAgent] = useState("");
   const [filterSeverity, setFilterSeverity] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -177,41 +192,63 @@ export default function ActivityFeed() {
               : "No messages match filters"}
           </div>
         )}
-        {filtered.map((msg) => (
-          <div
-            key={msg.id}
-            className="flex gap-3 py-1.5 border-b border-panel-border/30 last:border-0 items-start"
-          >
-            <span className="text-[10px] text-foreground/30 shrink-0 tabular-nums pt-0.5">
-              {formatTime(msg.timestamp)}
-            </span>
-            <span
-              className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 font-semibold uppercase ${SEVERITY_COLORS[msg.severity] ?? "bg-foreground/10 text-foreground/50"}`}
+        {filtered.map((msg) => {
+          const dispatchResult = msg.type === "dispatch-result" ? parseDispatchResult(msg.content) : null;
+          const isExpanded = expandedId === msg.id;
+
+          return (
+            <div
+              key={msg.id}
+              className={`py-1.5 border-b border-panel-border/30 last:border-0 ${dispatchResult ? "cursor-pointer hover:bg-panel-border/10" : ""}`}
+              onClick={() => dispatchResult && setExpandedId(isExpanded ? null : msg.id)}
             >
-              {msg.severity}
-            </span>
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] text-foreground/40 mb-0.5">
-                <span className="text-accent">{msg.from}</span>
-                {msg.to && (
-                  <>
-                    {" "}
-                    <span className="text-foreground/20">&rarr;</span>{" "}
-                    <span className="text-accent">{msg.to}</span>
-                  </>
-                )}
-                {msg.type && (
-                  <span className="ml-2 text-foreground/20">[{msg.type}]</span>
-                )}
+              <div className="flex gap-3 items-start">
+                <span className="text-[10px] text-foreground/30 shrink-0 tabular-nums pt-0.5">
+                  {formatTime(msg.timestamp)}
+                </span>
+                <span
+                  className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 font-semibold uppercase ${SEVERITY_COLORS[msg.severity] ?? "bg-foreground/10 text-foreground/50"}`}
+                >
+                  {msg.severity}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[10px] text-foreground/40 mb-0.5">
+                    <span className="text-accent">{msg.from}</span>
+                    {msg.to && (
+                      <>
+                        {" "}
+                        <span className="text-foreground/20">&rarr;</span>{" "}
+                        <span className="text-accent">{msg.to}</span>
+                      </>
+                    )}
+                    {msg.type && (
+                      <span className="ml-2 text-foreground/20">[{msg.type}]</span>
+                    )}
+                    {dispatchResult && (
+                      <span className="ml-2 text-foreground/20 text-[9px]">
+                        {isExpanded ? "▼" : "▶"}
+                      </span>
+                    )}
+                  </div>
+                  <div
+                    className={`text-xs ${dispatchResult ? "" : "truncate"} ${
+                      dispatchResult
+                        ? dispatchResult.success ? "text-success" : "text-danger"
+                        : SEVERITY_TEXT[msg.severity] ?? "text-foreground/60"
+                    }`}
+                  >
+                    {dispatchResult ? dispatchResult.summary : msg.content}
+                  </div>
+                </div>
               </div>
-              <div
-                className={`text-xs truncate ${SEVERITY_TEXT[msg.severity] ?? "text-foreground/60"}`}
-              >
-                {msg.content}
-              </div>
+              {dispatchResult && isExpanded && (
+                <div className="mt-2 ml-[72px] mr-2 p-2 bg-background/50 border border-panel-border/30 rounded text-[11px] text-foreground/70 whitespace-pre-wrap max-h-64 overflow-y-auto">
+                  {dispatchResult.output}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </>
   );
