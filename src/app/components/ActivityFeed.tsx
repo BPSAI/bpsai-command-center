@@ -79,6 +79,7 @@ function renderContent(msg: FeedMessage): {
   summary: string;
   detail: string | null;
   color: string;
+  refId: string | null;
 } {
   // Dispatch command
   if (msg.type === "dispatch") {
@@ -88,25 +89,24 @@ function renderContent(msg: FeedMessage): {
         summary: `Dispatch ${parsed.agent} → ${parsed.target}: ${parsed.prompt}`,
         detail: `Agent: ${parsed.agent}\nTarget: ${parsed.target}\nPrompt: ${parsed.prompt}`,
         color: "text-accent",
+        refId: null,
       };
     }
-    return { summary: msg.content, detail: null, color: "text-accent" };
+    return { summary: msg.content, detail: null, color: "text-accent", refId: null };
   }
 
   // Dispatch result
   if (msg.type === "dispatch-result") {
     const parsed = parseDispatchResult(msg.content);
     if (parsed) {
-      const refId = parsed.dispatchId ? ` [${shortId(parsed.dispatchId)}]` : "";
       return {
-        summary: parsed.success
-          ? `Dispatch complete${refId}`
-          : `Dispatch failed${refId}`,
+        summary: parsed.success ? "Dispatch complete" : "Dispatch failed",
         detail: parsed.output,
         color: parsed.success ? "text-success" : "text-danger",
+        refId: parsed.dispatchId || null,
       };
     }
-    return { summary: msg.content, detail: null, color: "text-foreground/60" };
+    return { summary: msg.content, detail: null, color: "text-foreground/60", refId: null };
   }
 
   // Everything else
@@ -114,6 +114,7 @@ function renderContent(msg: FeedMessage): {
     summary: msg.content,
     detail: null,
     color: SEVERITY_TEXT[msg.severity] ?? "text-foreground/60",
+    refId: null,
   };
 }
 
@@ -295,7 +296,8 @@ export default function ActivityFeed() {
           return (
             <div
               key={msg.id}
-              className={`py-1.5 border-b border-panel-border/30 last:border-0 ${hasDetail ? "cursor-pointer" : ""}`}
+              id={`msg-${msg.id}`}
+              className={`py-1.5 border-b border-panel-border/30 last:border-0 transition-all duration-500 ${hasDetail ? "cursor-pointer" : ""}`}
               onMouseEnter={(e) => handleMouseEnter(e, msg.id, rendered.detail)}
               onMouseLeave={handleMouseLeave}
             >
@@ -327,6 +329,22 @@ export default function ActivityFeed() {
                   </div>
                   <div className={`text-xs ${rendered.color}`}>
                     {rendered.summary}
+                    {rendered.refId && (
+                      <button
+                        className="ml-2 text-[9px] text-accent/50 hover:text-accent underline underline-offset-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const el = document.getElementById(`msg-${rendered.refId}`);
+                          if (el) {
+                            el.scrollIntoView({ behavior: "smooth", block: "center" });
+                            el.classList.add("ring-1", "ring-accent/40");
+                            setTimeout(() => el.classList.remove("ring-1", "ring-accent/40"), 2000);
+                          }
+                        }}
+                      >
+                        → {shortId(rendered.refId)}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
