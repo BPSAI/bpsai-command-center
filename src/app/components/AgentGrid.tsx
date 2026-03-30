@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 interface AgentStatus {
   name: string;
   state: "running" | "idle" | "errored" | "unknown";
+  stale: boolean;
   currentTask: string | null;
   lastActive: string;
 }
@@ -64,9 +65,10 @@ export default function AgentGrid() {
         const data = await res.json();
         if (!active) return;
         const raw = Array.isArray(data) ? data : data.agents ?? [];
-        const list = raw.map((a: Record<string, string | null>) => ({
+        const list = raw.map((a: Record<string, string | boolean | null>) => ({
           name: a.name,
           state: a.state,
+          stale: a.stale ?? false,
           currentTask: a.current_task ?? a.currentTask ?? null,
           lastActive: a.last_active ?? a.lastActive ?? "",
         }));
@@ -111,21 +113,22 @@ export default function AgentGrid() {
         )}
         {agents.map((agent) => {
           const style = STATE_STYLES[agent.state] ?? STATE_STYLES.unknown;
+          const opacity = agent.stale ? "opacity-50" : "";
           return (
             <div
               key={agent.name}
-              className={`border rounded p-2 text-xs ${style.border}`}
+              className={`border rounded p-2 text-xs ${style.border} ${opacity}`}
             >
               <div className="flex items-center gap-1.5 mb-1">
                 <span
-                  className={`w-2 h-2 rounded-full shrink-0 ${style.dot} ${agent.state === "running" ? "animate-pulse" : ""}`}
+                  className={`w-2 h-2 rounded-full shrink-0 ${style.dot} ${agent.state === "running" && !agent.stale ? "animate-pulse" : ""}`}
                 />
                 <span className="text-accent font-semibold truncate">
                   {agent.name}
                 </span>
               </div>
               <div className={`text-[10px] uppercase font-semibold mb-1 ${style.label}`}>
-                {agent.state}
+                {agent.state}{agent.stale ? " (stale)" : ""}
               </div>
               <div className="text-foreground/50 truncate">
                 {agent.currentTask ?? "No task"}
