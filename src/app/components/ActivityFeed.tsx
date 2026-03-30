@@ -56,12 +56,26 @@ export default function ActivityFeed() {
     es.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.type === "messages" && Array.isArray(data.messages)) {
+        if (data.type === "messages" && data.messages) {
+          // A2A response: {messages: {messages: [...], cursor, has_more}}
+          const raw = data.messages.messages ?? data.messages;
+          if (!Array.isArray(raw)) return;
+          const mapped: FeedMessage[] = raw.map((m: Record<string, string>) => ({
+            id: m.id,
+            timestamp: m.created_at,
+            from: m.from_project,
+            to: m.to_project,
+            type: m.type,
+            content: m.content,
+            severity: m.severity === "critical" || m.severity === "high" ? "error"
+              : m.severity === "medium" ? "warning"
+              : m.severity === "low" ? "success"
+              : "info",
+            project: m.from_project,
+          }));
           setMessages((prev) => {
             const existingIds = new Set(prev.map((m) => m.id));
-            const newMsgs = data.messages.filter(
-              (m: FeedMessage) => !existingIds.has(m.id)
-            );
+            const newMsgs = mapped.filter((m) => !existingIds.has(m.id));
             if (newMsgs.length === 0) return prev;
             return [...newMsgs, ...prev].slice(0, 200);
           });
