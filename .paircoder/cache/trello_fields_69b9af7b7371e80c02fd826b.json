@@ -1,5 +1,5 @@
 {
-  "timestamp": 1774838623.9179652,
+  "timestamp": 1774902731.1130958,
   "board_id": "69b9af7b7371e80c02fd826b",
   "fields": {
     "Project": {
@@ -12,7 +12,10 @@
         "DanHil RFQ": "69b9af7c7371e80c02fd8695",
         "Prompt Acadamy": "69b9af7c7371e80c02fd8696",
         "Weber SSRS Analysis": "69b9af7c7371e80c02fd8697",
-        "BPS A2A": "69b9b01e54a86f5838586259"
+        "BPS A2A": "69b9b01e54a86f5838586259",
+        "Command Center": "69c9e3a92fd6aaf6132f1532",
+        "Computer": "69c9e3b0b591f6cca1654125",
+        "Agent Packages": "69c9e3b71aa73c08441137c2"
       }
     },
     "Stack": {
@@ -77,7 +80,10 @@
       "id": "69b9af7c7371e80c02fd86a2",
       "type": "list",
       "options": {
-        "https://github.com/BPSAI/bps-a2a.git": "69b9afa5cd1bf6231698a679"
+        "https://github.com/BPSAI/bps-a2a.git": "69b9afa5cd1bf6231698a679",
+        "https://github.com/BPSAI/bpsai-computer": "69c9e52289137e6b1a042fad",
+        "https://github.com/BPSAI/bpsai-command-center": "69c9e533698a4b7af653445b",
+        "https://github.com/BPSAI/bpsai-agents": "69c9e53f7088424cddf5b535"
       }
     }
   }
