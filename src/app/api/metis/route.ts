@@ -11,8 +11,12 @@ export async function GET(request: NextRequest) {
   url.searchParams.set("agent", "bpsai-metis");
   url.searchParams.set("limit", String(limit));
 
+  const operator = request.headers.get("x-operator") ?? "";
   try {
-    const res = await fetch(url.toString(), { cache: "no-store" });
+    const res = await fetch(url.toString(), {
+      cache: "no-store",
+      headers: { "x-operator": operator },
+    });
     if (!res.ok) {
       return NextResponse.json(
         { messages: [], error: `Upstream ${res.status}` },

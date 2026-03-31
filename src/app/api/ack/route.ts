@@ -15,9 +15,10 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const operator = request.headers.get("x-operator") ?? "";
     const res = await fetch(`${A2A_BASE_URL}/messages/ack`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-operator": operator },
       body: JSON.stringify({ message_id: body.message_id }),
     });
 

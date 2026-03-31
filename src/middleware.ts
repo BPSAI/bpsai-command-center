@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BASIC_AUTH_USER = process.env.BASIC_AUTH_USER ?? "";
-const BASIC_AUTH_PASS = process.env.BASIC_AUTH_PASS ?? "";
+const AUTHORIZED_USERS_RAW = process.env.AUTHORIZED_USERS ?? "";
 
 function timingSafeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
@@ -12,41 +11,83 @@ function timingSafeEqual(a: string, b: string): boolean {
   return result === 0;
 }
 
-function isAuthenticated(request: NextRequest): boolean {
-  // In production, BASIC_AUTH_PASS must be set
-  if (!BASIC_AUTH_PASS) {
-    if (process.env.NODE_ENV === "production") return false;
-    return true; // dev: no password = auth disabled
+/** Parse AUTHORIZED_USERS env var: "user1:pass1,user2:pass2" */
+function parseAuthorizedUsers(raw: string): Map<string, string> {
+  const users = new Map<string, string>();
+  if (!raw.trim()) return users;
+  for (const entry of raw.split(",")) {
+    const colonIdx = entry.indexOf(":");
+    if (colonIdx === -1) continue;
+    const user = entry.slice(0, colonIdx).trim();
+    const pass = entry.slice(colonIdx + 1).trim();
+    if (user) users.set(user, pass);
+  }
+  return users;
+}
+
+const authorizedUsers = parseAuthorizedUsers(AUTHORIZED_USERS_RAW);
+
+/** Authenticate and return username, or null if invalid. */
+function authenticateUser(request: NextRequest): string | null {
+  // Dev: if no users configured, skip auth
+  if (authorizedUsers.size === 0) {
+    if (process.env.NODE_ENV === "production") return null;
+    return "dev";
   }
 
   const auth = request.headers.get("authorization");
-  if (!auth?.startsWith("Basic ")) return false;
+  if (!auth?.startsWith("Basic ")) return null;
 
   const decoded = atob(auth.slice(6));
   const colonIdx = decoded.indexOf(":");
-  if (colonIdx === -1) return false;
+  if (colonIdx === -1) return null;
 
   const user = decoded.slice(0, colonIdx);
   const pass = decoded.slice(colonIdx + 1);
-  return timingSafeEqual(user, BASIC_AUTH_USER) && timingSafeEqual(pass, BASIC_AUTH_PASS);
+
+  const expectedPass = authorizedUsers.get(user);
+  if (expectedPass === undefined) return null;
+  if (!timingSafeEqual(pass, expectedPass)) return null;
+
+  return user;
 }
 
 export function middleware(request: NextRequest) {
   // Production guard: refuse to serve if auth is not configured
-  if (process.env.NODE_ENV === "production" && !BASIC_AUTH_PASS) {
+  if (process.env.NODE_ENV === "production" && authorizedUsers.size === 0) {
     return new NextResponse("Server misconfigured", { status: 500 });
   }
 
-  if (isAuthenticated(request)) {
-    return NextResponse.next();
+  // Logout: clear the operator cookie and force re-auth
+  if (request.nextUrl.pathname === "/api/logout") {
+    const response = new NextResponse("Logged out", { status: 200 });
+    response.cookies.set("operator", "", { maxAge: 0, path: "/" });
+    return response;
   }
 
-  return new NextResponse("Unauthorized", {
-    status: 401,
-    headers: { "WWW-Authenticate": 'Basic realm="Command Center"' },
+  const operator = authenticateUser(request);
+  if (!operator) {
+    return new NextResponse("Unauthorized", {
+      status: 401,
+      headers: { "WWW-Authenticate": 'Basic realm="Command Center"' },
+    });
+  }
+
+  // Forward operator as a request header so API routes can read it
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-operator", operator);
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  // Also set a cookie so client JS can read the operator name
+  response.cookies.set("operator", operator, {
+    path: "/",
+    httpOnly: false, // client JS needs to read it
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
   });
+
+  return response;
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/health).*)"],
 };

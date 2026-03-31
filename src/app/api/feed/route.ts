@@ -1,10 +1,13 @@
+import { NextRequest } from "next/server";
+
 const A2A_BASE_URL = process.env.A2A_BASE_URL ?? "https://a2a.paircoder.ai";
 
 const MAX_DURATION_MS = 5 * 60 * 1000; // 5 minutes
 const POLL_INTERVAL_MS = 3000;
 const KEEPALIVE_INTERVAL_MS = 30_000;
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const operator = request.headers.get("x-operator") ?? "";
   const encoder = new TextEncoder();
   let pollId: ReturnType<typeof setInterval> | null = null;
   let keepaliveId: ReturnType<typeof setInterval> | null = null;
@@ -26,6 +29,7 @@ export async function GET() {
         try {
           const res = await fetch(`${A2A_BASE_URL}/messages/feed`, {
             cache: "no-store",
+            headers: { "x-operator": operator },
           });
           if (res.ok) {
             const messages = await res.json();

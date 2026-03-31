@@ -1,11 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ActivityFeed from "@/app/components/ActivityFeed";
 import AgentGrid from "@/app/components/AgentGrid";
 import ComputerChat from "@/app/components/ComputerChat";
 import NotificationCenter from "@/app/components/NotificationCenter";
 import StandupView from "@/app/components/StandupView";
+
+function getOperator(): string {
+  if (typeof document === "undefined") return "";
+  const match = document.cookie.match(/(?:^|;\s*)operator=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : "";
+}
 
 const PANELS = [
   { id: "feed", label: "Feed", icon: "◉" },
@@ -19,6 +25,19 @@ type PanelId = (typeof PANELS)[number]["id"];
 
 export default function Home() {
   const [activePanel, setActivePanel] = useState<PanelId>("feed");
+  const [operator, setOperator] = useState("");
+
+  useEffect(() => {
+    setOperator(getOperator());
+  }, []);
+
+  function handleLogout() {
+    fetch("/api/logout").then(() => {
+      // Clear cookies and force re-auth by reloading
+      document.cookie = "operator=; max-age=0; path=/";
+      window.location.reload();
+    });
+  }
 
   return (
     <div className="flex flex-col h-screen p-2 sm:p-3 gap-2 sm:gap-3">
@@ -33,6 +52,19 @@ export default function Home() {
         <div className="flex items-center gap-2 sm:gap-4 text-[10px] sm:text-xs text-foreground/50">
           <span className="hidden sm:inline">SYS: NOMINAL</span>
           <span className="text-success">● ONLINE</span>
+          {operator && (
+            <>
+              <span className="text-accent" title="Operator">
+                OP: {operator.toUpperCase()}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="text-foreground/40 hover:text-error transition-colors uppercase tracking-wider"
+              >
+                Logout
+              </button>
+            </>
+          )}
         </div>
       </header>
 

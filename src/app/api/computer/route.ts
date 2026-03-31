@@ -61,6 +61,7 @@ export async function POST(request: Request) {
     }
   }
 
+  const operator = request.headers.get("x-operator") ?? "";
   const model = process.env.COMPUTER_MODEL ?? "claude-sonnet-4-20250514";
 
   const res = await fetch(ANTHROPIC_API_URL, {
@@ -69,6 +70,7 @@ export async function POST(request: Request) {
       "Content-Type": "application/json",
       "x-api-key": apiKey,
       "anthropic-version": "2023-06-01",
+      "x-operator": operator,
     },
     body: JSON.stringify({
       model,
