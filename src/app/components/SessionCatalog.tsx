@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { getOperatorFromCookie } from "@/lib/use-operator";
 
 type SessionStatus = "started" | "running" | "complete" | "failed";
 
@@ -65,6 +66,8 @@ export default function SessionCatalog() {
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Session | null>(null);
   const [statusFilter, setStatusFilter] = useState<SessionStatus | "">("");
+  const [resumePending, setResumePending] = useState(false);
+  const [resumeError, setResumeError] = useState<string | null>(null);
 
   const fetchSessions = useCallback(async () => {
     try {
@@ -101,6 +104,34 @@ export default function SessionCatalog() {
       clearInterval(interval);
     };
   }, [fetchSessions]);
+
+  const handleResume = useCallback(async (sessionId: string) => {
+    setResumePending(true);
+    setResumeError(null);
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}/resume`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: `Status ${res.status}` }));
+        setResumeError(data.error ?? `Resume failed: ${res.status}`);
+        return;
+      }
+      setResumeError(null);
+      // Refresh sessions to reflect change
+      await fetchSessions();
+    } catch {
+      setResumeError("Failed to send resume command");
+    } finally {
+      setResumePending(false);
+    }
+  }, [fetchSessions]);
+
+  const operator = getOperatorFromCookie();
+  const canResume =
+    selected !== null &&
+    (selected.status === "complete" || selected.status === "failed") &&
+    selected.operator === operator;
 
   return (
     <>
@@ -213,6 +244,20 @@ export default function SessionCatalog() {
                   </span>
                 </div>
               )}
+              {resumeError && (
+                <div className="text-red-400 text-xs mt-1">{resumeError}</div>
+              )}
+              {canResume && (
+                <div className="mt-2">
+                  <button
+                    onClick={() => handleResume(selected.session_id)}
+                    disabled={resumePending}
+                    className="px-3 py-1 rounded text-xs font-semibold border border-accent/40 bg-accent/10 text-accent hover:bg-accent/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {resumePending ? "Resume Pending..." : "Resume"}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -227,9 +272,11 @@ export default function SessionCatalog() {
             return (
               <button
                 key={s.session_id}
-                onClick={() =>
-                  setSelected(isActive ? null : s)
-                }
+                onClick={() => {
+                  setSelected(isActive ? null : s);
+                  setResumeError(null);
+                  setResumePending(false);
+                }}
                 className={`w-full text-left flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-all hover:bg-accent/5 ${
                   isActive
                     ? "bg-accent/10 border border-accent/20"
