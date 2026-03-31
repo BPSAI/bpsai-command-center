@@ -1,13 +1,25 @@
 const A2A_BASE_URL = process.env.A2A_BASE_URL ?? "https://a2a.paircoder.ai";
 
+const MAX_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+const POLL_INTERVAL_MS = 3000;
+const KEEPALIVE_INTERVAL_MS = 30_000;
+
 export async function GET() {
   const encoder = new TextEncoder();
-  let intervalId: ReturnType<typeof setInterval> | null = null;
+  let pollId: ReturnType<typeof setInterval> | null = null;
+  let keepaliveId: ReturnType<typeof setInterval> | null = null;
+  let maxDurationId: ReturnType<typeof setTimeout> | null = null;
 
   const stream = new ReadableStream({
     async start(controller) {
       const send = (data: unknown) => {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+      };
+
+      const cleanup = () => {
+        if (pollId !== null) { clearInterval(pollId); pollId = null; }
+        if (keepaliveId !== null) { clearInterval(keepaliveId); keepaliveId = null; }
+        if (maxDurationId !== null) { clearTimeout(maxDurationId); maxDurationId = null; }
       };
 
       const poll = async () => {
@@ -30,15 +42,25 @@ export async function GET() {
       await poll();
 
       // Poll every 3 seconds
-      intervalId = setInterval(poll, 3000);
+      pollId = setInterval(poll, POLL_INTERVAL_MS);
+
+      // Keepalive comment every 30 seconds
+      keepaliveId = setInterval(() => {
+        controller.enqueue(encoder.encode(":keepalive\n\n"));
+      }, KEEPALIVE_INTERVAL_MS);
+
+      // Max connection duration: close after 5 minutes
+      maxDurationId = setTimeout(() => {
+        cleanup();
+        try { controller.close(); } catch { /* already closed */ }
+      }, MAX_DURATION_MS);
 
       controller.enqueue(encoder.encode(":ok\n\n"));
     },
     cancel() {
-      if (intervalId !== null) {
-        clearInterval(intervalId);
-        intervalId = null;
-      }
+      if (pollId !== null) { clearInterval(pollId); pollId = null; }
+      if (keepaliveId !== null) { clearInterval(keepaliveId); keepaliveId = null; }
+      if (maxDurationId !== null) { clearTimeout(maxDurationId); maxDurationId = null; }
     },
   });
 

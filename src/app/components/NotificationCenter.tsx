@@ -1,17 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-
-interface FeedMessage {
-  id: string;
-  timestamp: string;
-  from: string;
-  to: string;
-  type: string;
-  content: string;
-  severity: "info" | "success" | "warning" | "error";
-  project?: string;
-}
+import { useState, useCallback } from "react";
+import { useFeedMessages, type FeedMessage } from "../lib/feed";
 
 interface Notification extends FeedMessage {
   acknowledged: boolean;
@@ -45,65 +35,18 @@ function formatTime(ts: string): string {
 }
 
 export default function NotificationCenter() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [connected, setConnected] = useState(false);
+  const { messages: feedMessages, connected } = useFeedMessages(200);
+  const [ackSet, setAckSet] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    const es = new EventSource("/api/feed");
-
-    es.onopen = () => setConnected(true);
-
-    es.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === "messages" && data.messages) {
-          const raw = data.messages.messages ?? data.messages;
-          if (!Array.isArray(raw)) return;
-
-          const mapped: FeedMessage[] = raw.map((m: Record<string, string>) => ({
-            id: m.id,
-            timestamp: m.created_at,
-            from: m.from_project,
-            to: m.to_project,
-            type: m.type,
-            content: m.content,
-            severity: m.severity === "critical" || m.severity === "high" ? "error"
-              : m.severity === "medium" ? "warning"
-              : m.severity === "low" ? "success"
-              : "info",
-            project: m.from_project,
-          }));
-
-          const actionable: Notification[] = mapped
-            .filter(isActionable)
-            .map((m) => ({ ...m, acknowledged: false }));
-
-          if (actionable.length === 0) return;
-
-          setNotifications((prev) => {
-            const existingIds = new Set(prev.map((n) => n.id));
-            const newItems = actionable.filter(
-              (n: Notification) => !existingIds.has(n.id),
-            );
-            if (newItems.length === 0) return prev;
-            return [...newItems, ...prev].slice(0, 100);
-          });
-        }
-      } catch {
-        // ignore
-      }
-    };
-
-    es.onerror = () => setConnected(false);
-
-    return () => es.close();
-  }, []);
+  // Derive notifications from shared feed messages
+  const notifications: Notification[] = feedMessages
+    .filter(isActionable)
+    .slice(0, 100)
+    .map((m) => ({ ...m, acknowledged: ackSet.has(m.id) }));
 
   const acknowledge = useCallback(async (id: string) => {
     // Optimistic update
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, acknowledged: true } : n)),
-    );
+    setAckSet((prev) => new Set(prev).add(id));
 
     try {
       await fetch("/api/ack", {
@@ -113,9 +56,11 @@ export default function NotificationCenter() {
       });
     } catch {
       // Revert on failure
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, acknowledged: false } : n)),
-      );
+      setAckSet((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   }, []);
 

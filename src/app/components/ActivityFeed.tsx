@@ -1,17 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
-
-interface FeedMessage {
-  id: string;
-  timestamp: string;
-  from: string;
-  to: string;
-  type: string;
-  content: string;
-  severity: "info" | "success" | "warning" | "error";
-  project?: string;
-}
+import { useRef, useState, useCallback } from "react";
+import { useFeedMessages, type FeedMessage } from "../lib/feed";
 
 const SEVERITY_COLORS: Record<string, string> = {
   success: "bg-success/20 text-success",
@@ -81,7 +71,6 @@ function renderContent(msg: FeedMessage): {
   color: string;
   refId: string | null;
 } {
-  // Dispatch command
   if (msg.type === "dispatch") {
     const parsed = parseDispatch(msg.content);
     if (parsed) {
@@ -95,7 +84,6 @@ function renderContent(msg: FeedMessage): {
     return { summary: msg.content, detail: null, color: "text-accent", refId: null };
   }
 
-  // Dispatch result
   if (msg.type === "dispatch-result") {
     const parsed = parseDispatchResult(msg.content);
     if (parsed) {
@@ -109,7 +97,6 @@ function renderContent(msg: FeedMessage): {
     return { summary: msg.content, detail: null, color: "text-foreground/60", refId: null };
   }
 
-  // Everything else
   return {
     summary: msg.content,
     detail: null,
@@ -119,8 +106,7 @@ function renderContent(msg: FeedMessage): {
 }
 
 export default function ActivityFeed() {
-  const [messages, setMessages] = useState<FeedMessage[]>([]);
-  const [connected, setConnected] = useState(false);
+  const { messages, connected } = useFeedMessages(200);
   const [filterProject, setFilterProject] = useState("");
   const [filterAgent, setFilterAgent] = useState("");
   const [filterSeverity, setFilterSeverity] = useState("");
@@ -130,50 +116,6 @@ export default function ActivityFeed() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const dismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    const es = new EventSource("/api/feed");
-
-    es.onopen = () => setConnected(true);
-
-    es.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === "messages" && data.messages) {
-          const raw = data.messages.messages ?? data.messages;
-          if (!Array.isArray(raw)) return;
-          const mapped: FeedMessage[] = raw.map((m: Record<string, string>) => ({
-            id: m.id,
-            timestamp: m.created_at,
-            from: m.from_project,
-            to: m.to_project,
-            type: m.type,
-            content: m.content,
-            severity: m.severity === "critical" || m.severity === "high" ? "error"
-              : m.severity === "medium" ? "warning"
-              : m.severity === "low" ? "success"
-              : "info",
-            project: m.from_project,
-          }));
-          setMessages((prev) => {
-            const existingIds = new Set(prev.map((m) => m.id));
-            const newMsgs = mapped.filter((m) => !existingIds.has(m.id));
-            if (newMsgs.length === 0) return prev;
-            // Sort newest first
-            const all = [...prev, ...newMsgs];
-            all.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-            return all.slice(0, 200);
-          });
-        }
-      } catch {
-        // ignore parse errors
-      }
-    };
-
-    es.onerror = () => setConnected(false);
-
-    return () => es.close();
-  }, []);
 
   const projects = [...new Set(messages.map((m) => m.project).filter(Boolean))];
   const agents = [
@@ -197,13 +139,11 @@ export default function ActivityFeed() {
       dismissTimer.current = null;
     }
     setDismissingId(null);
-    // Position relative to the panel, not the viewport
     const row = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const panel = panelRef.current?.getBoundingClientRect();
     if (panel) {
-      // Center horizontally over the panel, below the hovered row
       setHoverPos({
-        x: panel.left + panel.width / 2 - 200, // 200 = half of 400px width
+        x: panel.left + panel.width / 2 - 200,
         y: row.bottom + 8,
       });
     } else {
@@ -218,7 +158,7 @@ export default function ActivityFeed() {
       dismissTimer.current = setTimeout(() => {
         setHoveredId(null);
         setDismissingId(null);
-      }, 200); // match animation duration
+      }, 200);
     }
   }, [hoveredId]);
 
