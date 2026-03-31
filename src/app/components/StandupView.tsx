@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { formatTime, formatDate } from "../lib/format";
 
 interface MetisMessage {
   id: string;
@@ -9,30 +10,6 @@ interface MetisMessage {
   content: string;
   severity: string;
   created_at: string;
-}
-
-function formatTime(ts: string): string {
-  try {
-    const d = new Date(ts);
-    return d.toLocaleTimeString("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return ts;
-  }
-}
-
-function formatDate(ts: string): string {
-  try {
-    const d = new Date(ts);
-    return d.toLocaleDateString("en-GB", {
-      month: "short",
-      day: "numeric",
-    });
-  } catch {
-    return ts;
-  }
 }
 
 const TYPE_LABELS: Record<string, { label: string; color: string }> = {

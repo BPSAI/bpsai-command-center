@@ -2,6 +2,7 @@
 
 import { useRef, useState, useCallback } from "react";
 import { useFeedMessages, type FeedMessage } from "../lib/feed";
+import { formatTime } from "../lib/format";
 
 const SEVERITY_COLORS: Record<string, string> = {
   success: "bg-success/20 text-success",
@@ -16,19 +17,6 @@ const SEVERITY_TEXT: Record<string, string> = {
   error: "text-danger",
   info: "text-accent",
 };
-
-function formatTime(ts: string): string {
-  try {
-    const d = new Date(ts);
-    return d.toLocaleTimeString("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
-  } catch {
-    return ts;
-  }
-}
 
 function shortId(id: string): string {
   return id.slice(0, 8);
@@ -243,7 +231,7 @@ export default function ActivityFeed() {
             >
               <div className="flex gap-3 items-start">
                 <span className="text-[10px] text-foreground/30 shrink-0 tabular-nums pt-0.5">
-                  {formatTime(msg.timestamp)}
+                  {formatTime(msg.timestamp, true)}
                 </span>
                 <span
                   className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 font-semibold uppercase ${SEVERITY_COLORS[msg.severity] ?? "bg-foreground/10 text-foreground/50"}`}

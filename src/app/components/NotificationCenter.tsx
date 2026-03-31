@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useFeedMessages, type FeedMessage } from "../lib/feed";
+import { formatTime } from "../lib/format";
 
 interface Notification extends FeedMessage {
   acknowledged: boolean;
@@ -21,18 +22,6 @@ const LEVEL_STYLES: Record<string, { icon: string; color: string }> = {
   info: { icon: "●", color: "text-accent" },
   success: { icon: "✓", color: "text-success" },
 };
-
-function formatTime(ts: string): string {
-  try {
-    const d = new Date(ts);
-    return d.toLocaleTimeString("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return ts;
-  }
-}
 
 export default function NotificationCenter() {
   const { messages: feedMessages, connected } = useFeedMessages(200);

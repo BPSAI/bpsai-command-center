@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, type FormEvent } from "react";
 import ReactMarkdown from "react-markdown";
+import rehypeSanitize from "rehype-sanitize";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -142,6 +143,7 @@ export default function ComputerChat() {
               {msg.role === "assistant" ? (
                 <span className="text-amber-400/90 prose-invert inline">
                   <ReactMarkdown
+                    rehypePlugins={[rehypeSanitize]}
                     components={{
                       p: ({ children }) => <span>{children} </span>,
                       code: ({ children }) => (
