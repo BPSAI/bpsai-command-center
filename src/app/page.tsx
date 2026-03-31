@@ -6,6 +6,7 @@ import AgentGrid from "@/app/components/AgentGrid";
 import ComputerChat from "@/app/components/ComputerChat";
 import NotificationCenter from "@/app/components/NotificationCenter";
 import StandupView from "@/app/components/StandupView";
+import SessionCatalog from "@/app/components/SessionCatalog";
 
 function getOperator(): string {
   if (typeof document === "undefined") return "";
@@ -16,6 +17,7 @@ function getOperator(): string {
 const PANELS = [
   { id: "feed", label: "Feed", icon: "◉" },
   { id: "agents", label: "Agents", icon: "◈" },
+  { id: "sessions", label: "Sessions", icon: "◫" },
   { id: "computer", label: "Computer", icon: "◇" },
   { id: "notifs", label: "Alerts", icon: "⚡" },
   { id: "standup", label: "Standup", icon: "◎" },
@@ -90,8 +92,8 @@ export default function Home() {
 
       {/* Desktop grid — hidden below md */}
       <div className="hidden md:grid flex-1 grid-cols-2 lg:grid-cols-3 grid-rows-2 gap-3 min-h-0">
-        {/* Activity Feed — tall left column on lg, top-left on md */}
-        <div className="panel lg:row-span-2">
+        {/* Activity Feed */}
+        <div className="panel">
           <ActivityFeed />
         </div>
 
@@ -100,7 +102,12 @@ export default function Home() {
           <AgentGrid />
         </div>
 
-        {/* Computer Chat — spans 2 cols on md when no 3rd column */}
+        {/* Session Catalog */}
+        <div className="panel">
+          <SessionCatalog />
+        </div>
+
+        {/* Computer Chat */}
         <div className="panel">
           <ComputerChat />
         </div>
@@ -121,6 +128,7 @@ export default function Home() {
         <div className="panel h-full">
           {activePanel === "feed" && <ActivityFeed />}
           {activePanel === "agents" && <AgentGrid />}
+          {activePanel === "sessions" && <SessionCatalog />}
           {activePanel === "computer" && <ComputerChat />}
           {activePanel === "notifs" && <NotificationCenter />}
           {activePanel === "standup" && <StandupView />}
