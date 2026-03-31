@@ -104,6 +104,36 @@ describe("listSessions", () => {
   });
 });
 
+describe("QuotaExceededError handling", () => {
+  it("saveSession does not throw on QuotaExceededError", () => {
+    const spy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("quota exceeded", "QuotaExceededError");
+    });
+
+    expect(() =>
+      saveSession("alice", "s1", [{ role: "user", content: "hello" }]),
+    ).not.toThrow();
+
+    spy.mockRestore();
+  });
+
+  it("saveSession returns false on QuotaExceededError", () => {
+    const spy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("quota exceeded", "QuotaExceededError");
+    });
+
+    const result = saveSession("alice", "s1", [{ role: "user", content: "hello" }]);
+    expect(result).toBe(false);
+
+    spy.mockRestore();
+  });
+
+  it("saveSession returns true on success", () => {
+    const result = saveSession("alice", "s1", [{ role: "user", content: "hello" }]);
+    expect(result).toBe(true);
+  });
+});
+
 describe("deleteSession", () => {
   it("removes a session from storage", () => {
     saveSession("alice", "s1", [{ role: "user", content: "test" }]);

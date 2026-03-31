@@ -28,21 +28,29 @@ export function saveSession(
   operator: string,
   sessionId: string,
   messages: ChatMessage[],
-): void {
-  localStorage.setItem(messagesKey(operator, sessionId), JSON.stringify(messages));
+): boolean {
+  try {
+    localStorage.setItem(messagesKey(operator, sessionId), JSON.stringify(messages));
 
-  const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
-  const preview = lastUserMsg?.content.slice(0, 80) ?? "";
+    const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
+    const preview = lastUserMsg?.content.slice(0, 80) ?? "";
 
-  const index = loadIndex(operator);
-  const existing = index.findIndex((s) => s.id === sessionId);
-  const meta: SessionMeta = { id: sessionId, updatedAt: Date.now(), preview };
-  if (existing >= 0) {
-    index[existing] = meta;
-  } else {
-    index.push(meta);
+    const index = loadIndex(operator);
+    const existing = index.findIndex((s) => s.id === sessionId);
+    const meta: SessionMeta = { id: sessionId, updatedAt: Date.now(), preview };
+    if (existing >= 0) {
+      index[existing] = meta;
+    } else {
+      index.push(meta);
+    }
+    localStorage.setItem(indexKey(operator), JSON.stringify(index));
+    return true;
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "QuotaExceededError") {
+      return false;
+    }
+    return false;
   }
-  localStorage.setItem(indexKey(operator), JSON.stringify(index));
 }
 
 export function loadSession(operator: string, sessionId: string): ChatMessage[] {

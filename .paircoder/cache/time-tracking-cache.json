@@ -12,5 +12,11 @@
       }
     ],
     "total_seconds": 27315.30888
+  },
+  "_active": {
+    "task_id": "CCSF.2",
+    "timer_id": "local-20260331142211",
+    "description": "CCSF.2: Test Coverage + Cleanup",
+    "start": "2026-03-31T14:22:11.590718"
   }
 }

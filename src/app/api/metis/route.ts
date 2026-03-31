@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const A2A_BASE_URL = process.env.A2A_BASE_URL ?? "https://a2a.paircoder.ai";
+import { A2A_BASE_URL } from "@/lib/config";
 
 export async function GET(request: NextRequest) {
   const rawLimit = request.nextUrl.searchParams.get("limit") ?? "20";

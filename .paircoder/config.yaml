@@ -1,10 +1,10 @@
 project_name: bpsai-command-center
-version: 2.18.2
+version: 2.19.1
 description: Real-time agent fleet operations interface
 project:
   name: Command Center
-  description: Real-time agent fleet operations interface — activity feed, agent status
-    grid, Computer conversation, notifications, standup view
+  description: "Real-time agent fleet operations interface \u2014 activity feed, agent\
+    \ status grid, Computer conversation, notifications, standup view"
   primary_goal: Define the API contract for the Bridge and provide daily operational
     visibility into the agent fleet
   coverage_target: 80

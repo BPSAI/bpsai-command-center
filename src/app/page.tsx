@@ -7,12 +7,7 @@ import ComputerChat from "@/app/components/ComputerChat";
 import NotificationCenter from "@/app/components/NotificationCenter";
 import StandupView from "@/app/components/StandupView";
 import SessionCatalog from "@/app/components/SessionCatalog";
-
-function getOperator(): string {
-  if (typeof document === "undefined") return "";
-  const match = document.cookie.match(/(?:^|;\s*)operator=([^;]*)/);
-  return match ? decodeURIComponent(match[1]) : "";
-}
+import { getOperatorFromCookie } from "@/lib/use-operator";
 
 const PANELS = [
   { id: "feed", label: "Feed", icon: "◉" },
@@ -30,7 +25,7 @@ export default function Home() {
   const [operator, setOperator] = useState("");
 
   useEffect(() => {
-    setOperator(getOperator());
+    setOperator(getOperatorFromCookie());
   }, []);
 
   function handleLogout() {

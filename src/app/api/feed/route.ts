@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
+import { A2A_BASE_URL } from "@/lib/config";
 
-const A2A_BASE_URL = process.env.A2A_BASE_URL ?? "https://a2a.paircoder.ai";
+export const dynamic = "force-dynamic";
 
 const MAX_DURATION_MS = 5 * 60 * 1000; // 5 minutes
 const POLL_INTERVAL_MS = 3000;
@@ -42,6 +43,9 @@ export async function GET(request: NextRequest) {
         }
       };
 
+      // Send :ok comment before first poll
+      controller.enqueue(encoder.encode(":ok\n\n"));
+
       // Initial poll
       await poll();
 
@@ -58,8 +62,6 @@ export async function GET(request: NextRequest) {
         cleanup();
         try { controller.close(); } catch { /* already closed */ }
       }, MAX_DURATION_MS);
-
-      controller.enqueue(encoder.encode(":ok\n\n"));
     },
     cancel() {
       if (pollId !== null) { clearInterval(pollId); pollId = null; }

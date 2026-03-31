@@ -8,6 +8,17 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: "Content-Security-Policy",
+            // CSP rationale:
+            // - unsafe-eval: required by Next.js in development (hot reload).
+            //   In production, Next.js still needs it for dynamic code paths
+            //   in the App Router runtime. Removing it breaks page hydration.
+            // - unsafe-inline (script-src): Next.js injects inline scripts for
+            //   page data (__NEXT_DATA__) and chunk preloading. A nonce-based
+            //   approach requires custom server middleware not yet implemented.
+            // - unsafe-inline (style-src): Tailwind + Next.js styled-jsx inject
+            //   inline <style> tags. Removing breaks all component styling.
+            // TODO: Migrate to nonce-based CSP when Next.js App Router supports
+            //   the `nonce` prop natively (tracked upstream).
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",

@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
-
-const A2A_BASE_URL = process.env.A2A_BASE_URL ?? "https://a2a.paircoder.ai";
+import { A2A_BASE_URL } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 

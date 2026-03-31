@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const A2A_BASE_URL = process.env.A2A_BASE_URL ?? "https://a2a.paircoder.ai";
+import { A2A_BASE_URL } from "@/lib/config";
 
 export async function POST(request: NextRequest) {
   let body: { message_id?: string };
@@ -25,7 +24,7 @@ export async function POST(request: NextRequest) {
     if (!res.ok) {
       return NextResponse.json(
         { error: `Upstream ${res.status}` },
-        { status: res.status },
+        { status: res.status === 404 ? 404 : 502 },
       );
     }
 

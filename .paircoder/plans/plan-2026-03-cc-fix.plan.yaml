@@ -1,0 +1,7 @@
+id: plan-2026-03-cc-fix
+title: 'CC-FIX: Post-Review Security + Quality Fixes'
+type: bugfix
+status: planned
+phases:
+  - id: 1
+    tasks: [CCF.1, CCF.2, CCF.3]

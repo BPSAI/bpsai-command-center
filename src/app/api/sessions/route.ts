@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
-
-const A2A_BASE_URL = process.env.A2A_BASE_URL ?? "https://a2a.paircoder.ai";
+import { A2A_BASE_URL } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +20,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
 
   const upstreamUrl = buildSessionsUrl(A2A_BASE_URL, {
-    operator: searchParams.get("operator") ?? operator,
+    operator,
     status: searchParams.get("status") ?? undefined,
     machine: searchParams.get("machine") ?? undefined,
   });

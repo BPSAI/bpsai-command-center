@@ -28,6 +28,22 @@ Tasks deprioritized for later work will appear here.
 
 ## What Was Just Done
 
+- **CCSF.2 done** — Test Coverage + Cleanup: Extracted A2A_BASE_URL to shared `src/lib/config.ts` (removed duplication from 7 route files), removed duplicate `getOperator` in page.tsx (now imports from `lib/use-operator`), SessionCatalog operator read moved to useState+useEffect (no render-time cookie access), added QuotaExceededError handling in chat-storage.ts (returns boolean), CSP unsafe-inline/unsafe-eval documented with rationale in next.config.ts, added feed message mapping tests + config tests + diff-length password auth tests. 153 tests passing, build verified.
+
+- **CCSF.1 done** — Auth + Proxy Security Fixes: HMAC-based timingSafeEqual (eliminates length leak), operator scoping bypass fixed (x-operator from middleware is authoritative, client ?operator ignored), session_id encodeURIComponent in all upstream URLs, PATCH field allowlist (only status forwarded), x-operator removed from Anthropic API request, ack route maps non-404 to 502, SSE feed force-dynamic + :ok before first poll. 15 new tests (131 total), build verified.
+
+- **T2.5 done** — Resume dispatch from Command Center: Resume button on session detail (visible for complete/failed sessions owned by current operator), POST /api/sessions/[session_id]/resume proxy route with operator scoping + resumability validation + A2A dispatch, "Resume Pending..." in-flight state, error handling for daemon offline and non-resumable sessions. 22 new tests (116 total), build verified.
+
+- **T2.4 done** — Session catalog UI panel: SessionCatalog component with status badges (started=yellow, running=blue, complete=green, failed=red), 30s auto-refresh, click-to-detail view (command, timing, output summary), status filter dropdown, API proxy routes /api/sessions and /api/sessions/[session_id], 36 new tests (94 total), build verified
+
+- **T2.2 done** — Computer Chat localStorage persistence: conversations saved to `chat:{operator}:{session_id}`, session sidebar with New Chat/Clear, operator isolation, auto-restore on refresh. 23 new tests (storage round-trip, isolation, actions).
+
+- **T2.1 done** — Per-user basic auth with operator identity: multi-user AUTHORIZED_USERS env var, x-operator header on all downstream API calls, operator display + logout button in header, 35 tests passing
+
+- **CCF.1 done** — Auth + API security hardening (middleware, validation, ack proxy, env vars)
+- **CCF.2 done** — SSE stream fixes (closure cleanup, max duration, shared useFeedMessages hook)
+- **CCF.3 done** — Quality + DX (vitest + 21 tests, security headers, rehype-sanitize, formatTime extraction, cleanup)
+
 - **T1.7 done** (auto-updated by hook)
 
 - **T1.6 done** (auto-updated by hook)

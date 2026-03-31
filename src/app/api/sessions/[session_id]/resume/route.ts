@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
-
-const A2A_BASE_URL = process.env.A2A_BASE_URL ?? "https://a2a.paircoder.ai";
+import { A2A_BASE_URL } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +20,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   // Fetch session to validate ownership and resumability
   let session: { operator: string; status: string };
   try {
-    const res = await fetch(`${A2A_BASE_URL}/sessions/${session_id}`, {
+    const res = await fetch(`${A2A_BASE_URL}/sessions/${encodeURIComponent(session_id)}`, {
       cache: "no-store",
       headers: { "x-operator": operator },
     });

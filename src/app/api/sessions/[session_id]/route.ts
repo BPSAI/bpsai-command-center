@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
-
-const A2A_BASE_URL = process.env.A2A_BASE_URL ?? "https://a2a.paircoder.ai";
+import { A2A_BASE_URL } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +14,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const operator = request.headers.get("x-operator") ?? "";
 
   try {
-    const res = await fetch(`${A2A_BASE_URL}/sessions/${session_id}`, {
+    const res = await fetch(`${A2A_BASE_URL}/sessions/${encodeURIComponent(session_id)}`, {
       cache: "no-store",
       headers: { "x-operator": operator },
     });
@@ -33,6 +32,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return Response.json({ error: "Backend unreachable" }, { status: 502 });
   }
 }
+
+const PATCH_ALLOWED_FIELDS = new Set(["status"]);
 
 export async function PATCH(request: NextRequest, context: RouteContext) {
   const { session_id } = await context.params;
@@ -59,15 +60,23 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     return Response.json({ error: "Invalid status value" }, { status: 400 });
   }
 
+  // Only forward allowed fields to upstream
+  const filtered: Record<string, unknown> = {};
+  for (const key of Object.keys(body)) {
+    if (PATCH_ALLOWED_FIELDS.has(key)) {
+      filtered[key] = body[key];
+    }
+  }
+
   try {
-    const res = await fetch(`${A2A_BASE_URL}/sessions/${session_id}`, {
+    const res = await fetch(`${A2A_BASE_URL}/sessions/${encodeURIComponent(session_id)}`, {
       method: "PATCH",
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
         "x-operator": operator,
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(filtered),
     });
 
     if (!res.ok) {

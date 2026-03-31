@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { createHmac, timingSafeEqual as cryptoTimingSafeEqual } from "crypto";
 
 // We test the pure logic by importing and testing the middleware function
 // Since middleware uses NextRequest/NextResponse, we mock them minimally
@@ -7,14 +8,12 @@ function encode(user: string, pass: string): string {
   return "Basic " + btoa(`${user}:${pass}`);
 }
 
-// Inline the timing-safe compare and auth logic to test it directly
+// HMAC-based timing-safe compare (matches middleware.ts implementation)
 function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return result === 0;
+  const key = "timing-safe-compare";
+  const ha = createHmac("sha256", key).update(a).digest();
+  const hb = createHmac("sha256", key).update(b).digest();
+  return cryptoTimingSafeEqual(ha, hb);
 }
 
 function parseCredentials(authHeader: string): { user: string; pass: string } | null {
@@ -172,5 +171,17 @@ describe("authenticateUser", () => {
 
   it("returns null for malformed base64", () => {
     expect(authenticateUser("Basic " + btoa("nocolon"), users)).toBeNull();
+  });
+
+  it("rejects different-length password without timing leak", () => {
+    // alice's password is "secret" (6 chars), try with much longer password
+    const header = encode("alice", "this-is-a-much-longer-password");
+    expect(authenticateUser(header, users)).toBeNull();
+  });
+
+  it("rejects shorter password without timing leak", () => {
+    // bob's password is "password123" (11 chars), try with short password
+    const header = encode("bob", "pw");
+    expect(authenticateUser(header, users)).toBeNull();
   });
 });

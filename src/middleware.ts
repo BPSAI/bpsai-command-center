@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createHmac, timingSafeEqual as cryptoTimingSafeEqual } from "crypto";
 
 const AUTHORIZED_USERS_RAW = process.env.AUTHORIZED_USERS ?? "";
 
 function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return result === 0;
+  const key = "timing-safe-compare";
+  const ha = createHmac("sha256", key).update(a).digest();
+  const hb = createHmac("sha256", key).update(b).digest();
+  return cryptoTimingSafeEqual(ha, hb);
 }
 
 /** Parse AUTHORIZED_USERS env var: "user1:pass1,user2:pass2" */

@@ -127,7 +127,11 @@ export default function SessionCatalog() {
     }
   }, [fetchSessions]);
 
-  const operator = getOperatorFromCookie();
+  const [operator, setOperator] = useState("");
+  useEffect(() => {
+    setOperator(getOperatorFromCookie());
+  }, []);
+
   const canResume =
     selected !== null &&
     (selected.status === "complete" || selected.status === "failed") &&
