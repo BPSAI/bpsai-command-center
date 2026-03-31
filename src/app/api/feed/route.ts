@@ -1,7 +1,8 @@
-const A2A_BASE = "https://a2a.paircoder.ai";
+const A2A_BASE_URL = process.env.A2A_BASE_URL ?? "https://a2a.paircoder.ai";
 
 export async function GET() {
   const encoder = new TextEncoder();
+  let intervalId: ReturnType<typeof setInterval> | null = null;
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -11,7 +12,7 @@ export async function GET() {
 
       const poll = async () => {
         try {
-          const res = await fetch(`${A2A_BASE}/messages/feed`, {
+          const res = await fetch(`${A2A_BASE_URL}/messages/feed`, {
             cache: "no-store",
           });
           if (res.ok) {
@@ -29,19 +30,15 @@ export async function GET() {
       await poll();
 
       // Poll every 3 seconds
-      const interval = setInterval(poll, 3000);
+      intervalId = setInterval(poll, 3000);
 
-      // Clean up when client disconnects
-      const cleanup = () => clearInterval(interval);
       controller.enqueue(encoder.encode(":ok\n\n"));
-
-      // Store cleanup for when stream is cancelled
-      (stream as unknown as { _cleanup: () => void })._cleanup = cleanup;
     },
     cancel() {
-      const cleanup = (stream as unknown as { _cleanup?: () => void })
-        ._cleanup;
-      if (cleanup) cleanup();
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
     },
   });
 

@@ -1,19 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const A2A_BASE = "https://a2a.paircoder.ai";
+const A2A_BASE_URL = process.env.A2A_BASE_URL ?? "https://a2a.paircoder.ai";
 
 export async function GET(request: NextRequest) {
-  const limit = request.nextUrl.searchParams.get("limit") ?? "20";
+  const rawLimit = request.nextUrl.searchParams.get("limit") ?? "20";
+  const parsed = parseInt(rawLimit, 10);
+  const limit = Number.isNaN(parsed) ? 20 : Math.max(1, Math.min(100, parsed));
+
+  const url = new URL(`${A2A_BASE_URL}/messages/feed`);
+  url.searchParams.set("agent", "bpsai-metis");
+  url.searchParams.set("limit", String(limit));
 
   try {
-    const res = await fetch(
-      `${A2A_BASE}/messages/feed?agent=bpsai-metis&limit=${limit}`,
-      { cache: "no-store" }
-    );
+    const res = await fetch(url.toString(), { cache: "no-store" });
     if (!res.ok) {
       return NextResponse.json(
         { messages: [], error: `Upstream ${res.status}` },
-        { status: res.status }
+        { status: res.status },
       );
     }
     const data = await res.json();
@@ -21,7 +24,7 @@ export async function GET(request: NextRequest) {
   } catch {
     return NextResponse.json(
       { messages: [], error: "Backend unreachable" },
-      { status: 502 }
+      { status: 502 },
     );
   }
 }

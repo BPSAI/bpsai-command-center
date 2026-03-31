@@ -1,17 +1,17 @@
-const A2A_BASE = "https://a2a.paircoder.ai";
+const A2A_BASE_URL = process.env.A2A_BASE_URL ?? "https://a2a.paircoder.ai";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const res = await fetch(`${A2A_BASE}/agents/status`, {
+    const res = await fetch(`${A2A_BASE_URL}/agents/status`, {
       cache: "no-store",
     });
 
     if (!res.ok) {
       return Response.json(
         { error: `Upstream responded ${res.status}` },
-        { status: 502 }
+        { status: 502 },
       );
     }
 

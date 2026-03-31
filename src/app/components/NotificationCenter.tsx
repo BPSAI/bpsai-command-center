@@ -106,7 +106,7 @@ export default function NotificationCenter() {
     );
 
     try {
-      await fetch("https://a2a.paircoder.ai/messages/ack", {
+      await fetch("/api/ack", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message_id: id }),
