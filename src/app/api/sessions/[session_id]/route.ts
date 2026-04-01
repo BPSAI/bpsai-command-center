@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { A2A_BASE_URL } from "@/lib/config";
+import { getA2AAuthHeaders } from "@/lib/a2a-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   try {
     const res = await fetch(`${A2A_BASE_URL}/sessions/${encodeURIComponent(session_id)}`, {
       cache: "no-store",
-      headers: { "x-operator": operator },
+      headers: await getA2AAuthHeaders(operator),
     });
 
     if (!res.ok) {
@@ -69,12 +70,13 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   }
 
   try {
+    const authHeaders = await getA2AAuthHeaders(operator);
     const res = await fetch(`${A2A_BASE_URL}/sessions/${encodeURIComponent(session_id)}`, {
       method: "PATCH",
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
-        "x-operator": operator,
+        ...authHeaders,
       },
       body: JSON.stringify(filtered),
     });

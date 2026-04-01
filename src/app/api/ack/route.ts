@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { A2A_BASE_URL } from "@/lib/config";
+import { getA2AAuthHeaders } from "@/lib/a2a-auth";
 
 export async function POST(request: NextRequest) {
   let body: { message_id?: string };
@@ -15,9 +16,10 @@ export async function POST(request: NextRequest) {
 
   try {
     const operator = request.headers.get("x-operator") ?? "";
+    const authHeaders = await getA2AAuthHeaders(operator);
     const res = await fetch(`${A2A_BASE_URL}/messages/ack`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-operator": operator },
+      headers: { "Content-Type": "application/json", ...authHeaders },
       body: JSON.stringify({ message_id: body.message_id }),
     });
 

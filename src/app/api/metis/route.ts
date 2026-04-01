@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { A2A_BASE_URL } from "@/lib/config";
+import { getA2AAuthHeaders } from "@/lib/a2a-auth";
 
 export async function GET(request: NextRequest) {
   const rawLimit = request.nextUrl.searchParams.get("limit") ?? "20";
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
   try {
     const res = await fetch(url.toString(), {
       cache: "no-store",
-      headers: { "x-operator": operator },
+      headers: await getA2AAuthHeaders(operator),
     });
     if (!res.ok) {
       return NextResponse.json(
