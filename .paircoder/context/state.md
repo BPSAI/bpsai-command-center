@@ -1,13 +1,34 @@
 # Current State
 
-> Last updated: 2026-03-31
+> Last updated: 2026-04-01
 
-## Status: CC-S4 + CC-FIX + CC-S4-FIX Complete — 153 Tests
+## Status: UA-P2 In Progress — 184 Tests
 
 ## Active Plan
 
-**Plan:** All plans complete
-**Current Sprint:** None active
+**Plan:** plan-2026-04-ua-phase2 — Unified Auth Phase 2
+**Type:** feature
+**Current Sprint:** UA-P2
+**Tasks:**
+- [x] UA2.1 — OAuth Login Flow (P0, 65cx) — done
+- [ ] UA2.2 — License Link Prompt (P0, 40cx, depends: UA2.1) — pending
+- [ ] UA2.3 — Portal JWT for A2A Calls (P0, 40cx, depends: UA2.1) — pending
+
+**Trello:** 3 cards synced to Planned/Ready
+
+## What Was Just Done (2026-04-01)
+
+- **UA2.1 OAuth Login Flow COMPLETE** (153→184 tests, +31 new)
+  - Replaced Basic Auth middleware with Zoho OAuth PKCE + portal JWT session cookies
+  - New: `src/lib/oauth.ts`, `src/lib/auth-middleware.ts`, `src/lib/auth-handlers.ts`
+  - Login page `/login`, callback `/auth/callback`, logout `/api/auth/logout`
+  - httpOnly secure cookies: access token (30min) + refresh token (12hr)
+  - Auto-refresh in middleware when token ≤2min from expiry
+  - Operator name from JWT `display_name` claim in header
+  - Removed: Basic Auth middleware, `AUTHORIZED_USERS` env var
+  - New env vars: `ZOHO_CLIENT_ID`, `SUPPORT_API_URL`
+
+- **UA-P2 Plan Created** — Unified Auth Phase 2: OAuth Login + License Link + Portal JWT
 
 ## What Was Just Done (2026-03-31)
 
@@ -29,13 +50,5 @@
 
 ## What's Next
 
-1. CC needs JWT integration — exchange Basic Auth for JWT, pass as Bearer to A2A (once A2A JWT auth is deployed)
-2. Branch protection setup (BPSAI/paircoder#121)
-3. CC-S5: potential features — daemon output streaming panel, structured standup, Unity Bridge API contract
+1. UA2.2: License Link Prompt + UA2.3: Portal JWT for A2A Calls (can run in parallel)
 
-```yaml
-project: bpsai-command-center
-status: complete
-tests: 153
-sprints_done: [CC-S1, CC-S2, CC-S3, CC-FIX, CC-S4, CC-S4-FIX]
-```

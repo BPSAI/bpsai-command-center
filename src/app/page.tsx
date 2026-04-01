@@ -29,10 +29,8 @@ export default function Home() {
   }, []);
 
   function handleLogout() {
-    fetch("/api/logout").then(() => {
-      // Clear cookies and force re-auth by reloading
-      document.cookie = "operator=; max-age=0; path=/";
-      window.location.reload();
+    fetch("/api/auth/logout", { method: "POST" }).then(() => {
+      window.location.href = "/login";
     });
   }
 

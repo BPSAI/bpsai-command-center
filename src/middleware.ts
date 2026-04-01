@@ -1,92 +1,107 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createHmac, timingSafeEqual as cryptoTimingSafeEqual } from "crypto";
+import {
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+  ACCESS_TOKEN_MAX_AGE,
+  REFRESH_TOKEN_MAX_AGE,
+  refreshPortalSession,
+} from "./lib/oauth";
+import { evaluateAuth } from "./lib/auth-middleware";
 
-const AUTHORIZED_USERS_RAW = process.env.AUTHORIZED_USERS ?? "";
-
-function timingSafeEqual(a: string, b: string): boolean {
-  const key = "timing-safe-compare";
-  const ha = createHmac("sha256", key).update(a).digest();
-  const hb = createHmac("sha256", key).update(b).digest();
-  return cryptoTimingSafeEqual(ha, hb);
-}
-
-/** Parse AUTHORIZED_USERS env var: "user1:pass1,user2:pass2" */
-function parseAuthorizedUsers(raw: string): Map<string, string> {
-  const users = new Map<string, string>();
-  if (!raw.trim()) return users;
-  for (const entry of raw.split(",")) {
-    const colonIdx = entry.indexOf(":");
-    if (colonIdx === -1) continue;
-    const user = entry.slice(0, colonIdx).trim();
-    const pass = entry.slice(colonIdx + 1).trim();
-    if (user) users.set(user, pass);
-  }
-  return users;
-}
-
-const authorizedUsers = parseAuthorizedUsers(AUTHORIZED_USERS_RAW);
-
-/** Authenticate and return username, or null if invalid. */
-function authenticateUser(request: NextRequest): string | null {
-  // Dev: if no users configured, skip auth
-  if (authorizedUsers.size === 0) {
-    if (process.env.NODE_ENV === "production") return null;
-    return "dev";
-  }
-
-  const auth = request.headers.get("authorization");
-  if (!auth?.startsWith("Basic ")) return null;
-
-  const decoded = atob(auth.slice(6));
-  const colonIdx = decoded.indexOf(":");
-  if (colonIdx === -1) return null;
-
-  const user = decoded.slice(0, colonIdx);
-  const pass = decoded.slice(colonIdx + 1);
-
-  const expectedPass = authorizedUsers.get(user);
-  if (expectedPass === undefined) return null;
-  if (!timingSafeEqual(pass, expectedPass)) return null;
-
-  return user;
-}
-
-export function middleware(request: NextRequest) {
-  // Production guard: refuse to serve if auth is not configured
-  if (process.env.NODE_ENV === "production" && authorizedUsers.size === 0) {
-    return new NextResponse("Server misconfigured", { status: 500 });
-  }
-
-  // Logout: clear the operator cookie and force re-auth
-  if (request.nextUrl.pathname === "/api/logout") {
-    const response = new NextResponse("Logged out", { status: 200 });
-    response.cookies.set("operator", "", { maxAge: 0, path: "/" });
-    return response;
-  }
-
-  const operator = authenticateUser(request);
-  if (!operator) {
-    return new NextResponse("Unauthorized", {
-      status: 401,
-      headers: { "WWW-Authenticate": 'Basic realm="Command Center"' },
-    });
-  }
-
-  // Forward operator as a request header so API routes can read it
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-operator", operator);
-  const response = NextResponse.next({ request: { headers: requestHeaders } });
-  // Also set a cookie so client JS can read the operator name
-  response.cookies.set("operator", operator, {
+function cookieOpts(maxAge: number, isProduction: boolean) {
+  return {
     path: "/",
-    httpOnly: false, // client JS needs to read it
+    httpOnly: true,
+    sameSite: "lax" as const,
+    secure: isProduction,
+    maxAge,
+  };
+}
+
+export async function middleware(request: NextRequest) {
+  const isProduction = process.env.NODE_ENV === "production";
+
+  const accessToken =
+    request.cookies.get(ACCESS_TOKEN_COOKIE)?.value ?? null;
+  const refreshToken =
+    request.cookies.get(REFRESH_TOKEN_COOKIE)?.value ?? null;
+
+  const result = evaluateAuth({
+    pathname: request.nextUrl.pathname,
+    accessToken,
+    refreshToken,
+  });
+
+  // Public paths — pass through
+  if (result.action === "skip") {
+    return NextResponse.next();
+  }
+
+  // Not authenticated — redirect to login
+  if (result.action === "redirect_login") {
+    const loginUrl = new URL("/login", request.url);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Token near-expiry — attempt refresh
+  if (result.action === "refresh") {
+    try {
+      const session = await refreshPortalSession(refreshToken!);
+      const requestHeaders = new Headers(request.headers);
+      requestHeaders.set("x-operator", result.operator);
+
+      const response = NextResponse.next({
+        request: { headers: requestHeaders },
+      });
+      response.cookies.set(
+        ACCESS_TOKEN_COOKIE,
+        session.access_token,
+        cookieOpts(ACCESS_TOKEN_MAX_AGE, isProduction),
+      );
+      response.cookies.set(
+        REFRESH_TOKEN_COOKIE,
+        session.refresh_token,
+        cookieOpts(REFRESH_TOKEN_MAX_AGE, isProduction),
+      );
+      // Non-httpOnly cookie for client JS to read operator name
+      response.cookies.set("operator", result.operator, {
+        path: "/",
+        httpOnly: false,
+        sameSite: "lax",
+        secure: isProduction,
+      });
+      return response;
+    } catch {
+      // Refresh failed — force re-login
+      const loginUrl = new URL("/login", request.url);
+      const response = NextResponse.redirect(loginUrl);
+      response.cookies.set(ACCESS_TOKEN_COOKIE, "", { maxAge: 0, path: "/" });
+      response.cookies.set(REFRESH_TOKEN_COOKIE, "", { maxAge: 0, path: "/" });
+      response.cookies.set("operator", "", { maxAge: 0, path: "/" });
+      return response;
+    }
+  }
+
+  // Valid token — forward operator header
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-operator", result.operator);
+
+  const response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+  // Keep operator cookie in sync for client JS
+  response.cookies.set("operator", result.operator, {
+    path: "/",
+    httpOnly: false,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: isProduction,
   });
 
   return response;
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/health).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico).*)",
+  ],
 };
