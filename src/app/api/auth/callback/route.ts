@@ -30,9 +30,9 @@ export async function POST(request: NextRequest) {
     return new NextResponse("Missing PKCE verifier", { status: 400 });
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const appUrl = process.env.APP_URL;
   if (!appUrl) {
-    return new NextResponse("NEXT_PUBLIC_APP_URL is not configured", { status: 500 });
+    return new NextResponse("APP_URL is not configured", { status: 500 });
   }
   const redirectUri = `${appUrl}/auth/callback`;
 

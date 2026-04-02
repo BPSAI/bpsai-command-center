@@ -3,10 +3,10 @@ import { cookies } from "next/headers";
 import { buildLoginRedirect } from "@/lib/auth-handlers";
 
 export async function GET(_request: NextRequest) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const appUrl = process.env.APP_URL;
   if (!appUrl) {
     return NextResponse.json(
-      { error: "NEXT_PUBLIC_APP_URL is not configured" },
+      { error: "APP_URL is not configured" },
       { status: 500 },
     );
   }
