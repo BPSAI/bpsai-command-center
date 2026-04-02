@@ -26,5 +26,11 @@
       }
     ],
     "total_seconds": 443.058673
+  },
+  "_active": {
+    "task_id": "UAT1.2",
+    "timer_id": "local-20260402123118",
+    "description": "UAT1.2: CC Auth Contract Tests",
+    "start": "2026-04-02T12:31:18.703158"
   }
 }

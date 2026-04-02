@@ -1,0 +1,8 @@
+id: plan-sprint-UAT-CC-engage
+phases:
+- id: 1
+  tasks:
+  - UAT1.2
+status: in_progress
+title: Sprint UAT-CC
+type: feature

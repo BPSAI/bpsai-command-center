@@ -58,5 +58,9 @@
   "UA2.3": {
     "last_cli_update": "2026-04-01T16:49:25.381918",
     "last_status": "done"
+  },
+  "UAT1.2": {
+    "last_cli_update": "2026-04-02T12:31:18.512481",
+    "last_status": "in_progress"
   }
 }
