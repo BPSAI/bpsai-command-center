@@ -70,7 +70,7 @@ jobs:
           RETRY_DELAY=10
 
           for i in $(seq 1 $MAX_RETRIES); do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" -u "${{ secrets.BASIC_AUTH_USER }}:${{ secrets.BASIC_AUTH_PASS }}" https://command.paircoder.ai)
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://command.paircoder.ai/login)
             echo "Attempt $i: HTTP $STATUS"
 
             if [ "$STATUS" = "200" ]; then
