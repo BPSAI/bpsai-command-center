@@ -7,6 +7,7 @@ import {
   refreshPortalSession,
 } from "./lib/oauth";
 import { evaluateAuth } from "./lib/auth-middleware";
+import { hasLicenseInJwt } from "./lib/license";
 
 function cookieOpts(maxAge: number, isProduction: boolean) {
   return {
@@ -69,7 +70,14 @@ export async function middleware(request: NextRequest) {
         httpOnly: false,
         sameSite: "lax",
         secure: isProduction,
+        maxAge: ACCESS_TOKEN_MAX_AGE,
       });
+      // License status cookie for client JS
+      response.cookies.set(
+        "cc_has_license",
+        hasLicenseInJwt(session.access_token) ? "1" : "0",
+        { path: "/", httpOnly: false, sameSite: "lax", secure: isProduction, maxAge: ACCESS_TOKEN_MAX_AGE },
+      );
       return response;
     } catch {
       // Refresh failed — force re-login
@@ -78,6 +86,7 @@ export async function middleware(request: NextRequest) {
       response.cookies.set(ACCESS_TOKEN_COOKIE, "", { maxAge: 0, path: "/" });
       response.cookies.set(REFRESH_TOKEN_COOKIE, "", { maxAge: 0, path: "/" });
       response.cookies.set("operator", "", { maxAge: 0, path: "/" });
+      response.cookies.set("cc_has_license", "", { maxAge: 0, path: "/" });
       return response;
     }
   }
@@ -95,7 +104,14 @@ export async function middleware(request: NextRequest) {
     httpOnly: false,
     sameSite: "lax",
     secure: isProduction,
+    maxAge: ACCESS_TOKEN_MAX_AGE,
   });
+  // License status cookie for client JS
+  response.cookies.set(
+    "cc_has_license",
+    hasLicenseInJwt(accessToken!) ? "1" : "0",
+    { path: "/", httpOnly: false, sameSite: "lax", secure: isProduction, maxAge: ACCESS_TOKEN_MAX_AGE },
+  );
 
   return response;
 }

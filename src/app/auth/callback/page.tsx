@@ -21,8 +21,12 @@ export default function AuthCallbackPage() {
       return;
     }
 
-    // Exchange code for tokens via our API route
-    fetch(`/api/auth/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`)
+    // Exchange code for tokens via our API route (POST to avoid code in query string)
+    fetch("/api/auth/callback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, state }),
+    })
       .then((res) => {
         if (!res.ok) return res.text().then((t) => Promise.reject(new Error(t)));
         return res.json();

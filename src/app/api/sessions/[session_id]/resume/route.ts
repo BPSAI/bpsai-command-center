@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { A2A_BASE_URL } from "@/lib/config";
-import { getA2AAuthHeaders } from "@/lib/a2a-auth";
+import { getProxyAuth } from "@/lib/a2a-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -18,13 +18,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
     return Response.json({ error: "Operator required" }, { status: 401 });
   }
 
+  const auth = getProxyAuth(request);
+  if ("error" in auth) return auth.error;
+
   // Fetch session to validate ownership and resumability
   let session: { operator: string; status: string };
   try {
-    const authHeaders = await getA2AAuthHeaders(operator);
     const res = await fetch(`${A2A_BASE_URL}/sessions/${encodeURIComponent(session_id)}`, {
       cache: "no-store",
-      headers: authHeaders,
+      headers: auth.headers,
     });
 
     if (!res.ok) {
@@ -57,13 +59,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   // Dispatch resume command to A2A
   try {
-    const dispatchHeaders = await getA2AAuthHeaders(operator);
     const res = await fetch(`${A2A_BASE_URL}/dispatch`, {
       method: "POST",
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
-        ...dispatchHeaders,
+        ...auth.headers,
       },
       body: JSON.stringify({
         type: "resume",

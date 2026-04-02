@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { A2A_BASE_URL } from "@/lib/config";
-import { getA2AAuthHeaders } from "@/lib/a2a-auth";
+import { getProxyAuth } from "@/lib/a2a-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +9,9 @@ const POLL_INTERVAL_MS = 3000;
 const KEEPALIVE_INTERVAL_MS = 30_000;
 
 export async function GET(request: NextRequest) {
-  const operator = request.headers.get("x-operator") ?? "";
+  const auth = getProxyAuth(request);
+  if ("error" in auth) return auth.error;
+
   const encoder = new TextEncoder();
   let pollId: ReturnType<typeof setInterval> | null = null;
   let keepaliveId: ReturnType<typeof setInterval> | null = null;
@@ -31,7 +33,7 @@ export async function GET(request: NextRequest) {
         try {
           const res = await fetch(`${A2A_BASE_URL}/messages/feed`, {
             cache: "no-store",
-            headers: await getA2AAuthHeaders(operator),
+            headers: auth.headers,
           });
           if (res.ok) {
             const messages = await res.json();

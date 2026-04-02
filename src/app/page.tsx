@@ -8,6 +8,8 @@ import NotificationCenter from "@/app/components/NotificationCenter";
 import StandupView from "@/app/components/StandupView";
 import SessionCatalog from "@/app/components/SessionCatalog";
 import { getOperatorFromCookie } from "@/lib/use-operator";
+import { getLicenseStatusFromCookie } from "@/lib/license";
+import LicenseLinkModal from "@/app/components/LicenseLinkModal";
 
 const PANELS = [
   { id: "feed", label: "Feed", icon: "◉" },
@@ -23,9 +25,11 @@ type PanelId = (typeof PANELS)[number]["id"];
 export default function Home() {
   const [activePanel, setActivePanel] = useState<PanelId>("feed");
   const [operator, setOperator] = useState("");
+  const [hasLicense, setHasLicense] = useState(true); // default true to avoid flash
 
   useEffect(() => {
     setOperator(getOperatorFromCookie());
+    setHasLicense(getLicenseStatusFromCookie());
   }, []);
 
   function handleLogout() {
@@ -127,6 +131,12 @@ export default function Home() {
           {activePanel === "standup" && <StandupView />}
         </div>
       </div>
+
+      {/* License link prompt — shown when JWT has no license_id */}
+      <LicenseLinkModal
+        hasLicense={hasLicense}
+        onLinked={() => setHasLicense(true)}
+      />
     </div>
   );
 }

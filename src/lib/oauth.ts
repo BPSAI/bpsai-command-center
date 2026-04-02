@@ -16,6 +16,18 @@ const ZOHO_CLIENT_ID = () => process.env.ZOHO_CLIENT_ID ?? "";
 const ZOHO_ACCOUNTS_DOMAIN = "https://accounts.zoho.com";
 
 // ---------------------------------------------------------------------------
+// Env validation — call before auth flows
+// ---------------------------------------------------------------------------
+export function requireAuthEnv(): void {
+  if (!process.env.SUPPORT_API_URL) {
+    throw new Error("SUPPORT_API_URL is not set — cannot run auth flow");
+  }
+  if (!process.env.ZOHO_CLIENT_ID) {
+    throw new Error("ZOHO_CLIENT_ID is not set — cannot run auth flow");
+  }
+}
+
+// ---------------------------------------------------------------------------
 // PKCE helpers (RFC 7636)
 // ---------------------------------------------------------------------------
 export function generateCodeVerifier(): string {
@@ -142,6 +154,13 @@ export async function revokePortalSession(
 // ---------------------------------------------------------------------------
 // JWT claim parsing (no verification — middleware trusts bpsai-support)
 // ---------------------------------------------------------------------------
+// SECURITY: parseJwtClaims does NOT verify the JWT signature. This is
+// intentional — the token is issued by bpsai-support over a trusted
+// server-to-server channel and stored in an httpOnly cookie that only our
+// middleware reads. The trust boundary is between this app and bpsai-support;
+// the JWT is never accepted from an untrusted source. If the deployment model
+// changes (e.g. token accepted from client headers), signature verification
+// MUST be added here.
 export interface JwtClaims {
   sub: string;
   display_name: string;

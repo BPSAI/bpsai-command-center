@@ -1,7 +1,14 @@
 import { parseJwtClaims } from "./oauth";
 
 // Paths that bypass authentication entirely
-export const PUBLIC_PATHS = ["/login", "/auth/callback", "/api/health"];
+export const PUBLIC_PATHS = [
+  "/login",
+  "/auth/callback",
+  "/api/health",
+  "/api/auth/login",
+  "/api/auth/callback",
+  "/api/auth/logout",
+];
 
 // Refresh access token when it expires within this many seconds
 export const REFRESH_THRESHOLD_SEC = 120;

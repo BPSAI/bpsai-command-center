@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { buildLoginRedirect } from "@/lib/auth-handlers";
 
-export async function GET(request: NextRequest) {
-  const origin = request.nextUrl.origin;
-  const redirectUri = `${origin}/auth/callback`;
+export async function GET(_request: NextRequest) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!appUrl) {
+    return NextResponse.json(
+      { error: "NEXT_PUBLIC_APP_URL is not configured" },
+      { status: 500 },
+    );
+  }
+  const redirectUri = `${appUrl}/auth/callback`;
 
   const { authUrl, codeVerifier, state } =
     await buildLoginRedirect(redirectUri);

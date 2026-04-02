@@ -16,6 +16,7 @@ export async function POST() {
   cookieStore.set(ACCESS_TOKEN_COOKIE, "", { maxAge: 0, path: "/" });
   cookieStore.set(REFRESH_TOKEN_COOKIE, "", { maxAge: 0, path: "/" });
   cookieStore.set("operator", "", { maxAge: 0, path: "/" });
+  cookieStore.set("cc_has_license", "", { maxAge: 0, path: "/" });
 
   return NextResponse.json({ redirectTo: "/login" });
 }

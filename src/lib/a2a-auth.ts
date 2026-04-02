@@ -1,59 +1,42 @@
-import { PAIRCODER_API_URL, LICENSE_ID } from "./config";
+import { NextRequest, NextResponse } from "next/server";
 
-interface TokenResponse {
-  token: string;
-  expires_at: string;
-  tier: string;
-  operator: string;
-}
-
-interface CachedToken {
-  token: string;
-  expiresAt: number;
-}
-
-let cachedToken: CachedToken | null = null;
-
-async function fetchToken(operator: string): Promise<string | null> {
-  try {
-    const res = await fetch(
-      `${PAIRCODER_API_URL}/api/v1/auth/operator-token`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ license_id: LICENSE_ID, operator }),
-      },
-    );
-
-    if (!res.ok) return null;
-
-    const data: TokenResponse = await res.json();
-    cachedToken = {
-      token: data.token,
-      expiresAt: new Date(data.expires_at).getTime(),
-    };
-    return data.token;
-  } catch {
-    return null;
-  }
-}
-
-export async function getA2AAuthHeaders(
+/**
+ * Build auth headers for A2A proxy calls using the portal session JWT.
+ *
+ * The portal JWT (from cc_access_token cookie) carries org_id and operator
+ * claims that A2A uses for scoping. In dev mode without OAuth, the JWT may
+ * be absent — we log a warning and proceed with x-operator only.
+ */
+export function getA2AAuthHeaders(
   operator: string,
-): Promise<Record<string, string>> {
+  portalJwt: string | undefined,
+): Record<string, string> {
   const headers: Record<string, string> = { "x-operator": operator };
 
-  if (!LICENSE_ID) return headers;
-
-  if (cachedToken && cachedToken.expiresAt > Date.now()) {
-    headers["Authorization"] = `Bearer ${cachedToken.token}`;
-    return headers;
-  }
-
-  const token = await fetchToken(operator);
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+  if (portalJwt) {
+    headers["Authorization"] = `Bearer ${portalJwt}`;
+  } else {
+    console.warn(
+      "[a2a-auth] No portal JWT — A2A call will lack Bearer token (dev mode?)",
+    );
   }
 
   return headers;
+}
+
+/**
+ * Extract portal JWT from request cookies and build A2A auth headers.
+ * Returns a 401 Response if cookie is missing in production.
+ */
+export function getProxyAuth(
+  request: NextRequest,
+): { headers: Record<string, string> } | { error: NextResponse } {
+  const operator = request.headers.get("x-operator") ?? "";
+  const portalJwt = request.cookies.get("cc_access_token")?.value;
+
+  if (!portalJwt && process.env.NODE_ENV === "production") {
+    return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+  }
+
+  return { headers: getA2AAuthHeaders(operator, portalJwt) };
 }

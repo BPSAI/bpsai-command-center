@@ -24,27 +24,9 @@ describe("A2A_BASE_URL config", () => {
     expect(A2A_BASE_URL).toBe("https://custom.example.com");
   });
 
-  it("exports PAIRCODER_API_URL with default when env is unset", async () => {
-    delete process.env.PAIRCODER_API_URL;
-    const { PAIRCODER_API_URL } = await import("../src/lib/config");
-    expect(PAIRCODER_API_URL).toBe("https://api.paircoder.ai");
-  });
-
-  it("exports PAIRCODER_API_URL from env when set", async () => {
-    process.env.PAIRCODER_API_URL = "https://custom-api.example.com";
-    const { PAIRCODER_API_URL } = await import("../src/lib/config");
-    expect(PAIRCODER_API_URL).toBe("https://custom-api.example.com");
-  });
-
-  it("exports LICENSE_ID as empty string when env is unset", async () => {
-    delete process.env.LICENSE_ID;
-    const { LICENSE_ID } = await import("../src/lib/config");
-    expect(LICENSE_ID).toBe("");
-  });
-
-  it("exports LICENSE_ID from env when set", async () => {
-    process.env.LICENSE_ID = "my-license-uuid";
-    const { LICENSE_ID } = await import("../src/lib/config");
-    expect(LICENSE_ID).toBe("my-license-uuid");
+  it("no longer exports PAIRCODER_API_URL or LICENSE_ID (removed in UA2.3)", async () => {
+    const config = await import("../src/lib/config");
+    expect(config).not.toHaveProperty("PAIRCODER_API_URL");
+    expect(config).not.toHaveProperty("LICENSE_ID");
   });
 });

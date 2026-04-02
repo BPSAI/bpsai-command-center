@@ -8,10 +8,12 @@ import {
   REFRESH_TOKEN_MAX_AGE,
   parseJwtClaims,
 } from "@/lib/oauth";
+import { hasLicenseInJwt } from "@/lib/license";
 
-export async function GET(request: NextRequest) {
-  const code = request.nextUrl.searchParams.get("code");
-  const state = request.nextUrl.searchParams.get("state");
+export async function POST(request: NextRequest) {
+  const body = await request.json().catch(() => null);
+  const code = body?.code ?? null;
+  const state = body?.state ?? null;
 
   if (!code || !state) {
     return new NextResponse("Missing code or state", { status: 400 });
@@ -28,8 +30,11 @@ export async function GET(request: NextRequest) {
     return new NextResponse("Missing PKCE verifier", { status: 400 });
   }
 
-  const origin = request.nextUrl.origin;
-  const redirectUri = `${origin}/auth/callback`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!appUrl) {
+    return new NextResponse("NEXT_PUBLIC_APP_URL is not configured", { status: 500 });
+  }
+  const redirectUri = `${appUrl}/auth/callback`;
 
   try {
     const result = await handleCallback({
@@ -64,7 +69,15 @@ export async function GET(request: NextRequest) {
       httpOnly: false,
       sameSite: "lax",
       secure: isProduction,
+      maxAge: ACCESS_TOKEN_MAX_AGE,
     });
+
+    // Set license status cookie for client JS
+    cookieStore.set(
+      "cc_has_license",
+      hasLicenseInJwt(result.portalAccessToken) ? "1" : "0",
+      { path: "/", httpOnly: false, sameSite: "lax", secure: isProduction, maxAge: ACCESS_TOKEN_MAX_AGE },
+    );
 
     // Clean up PKCE cookies
     cookieStore.set("pkce_verifier", "", { maxAge: 0, path: "/" });
