@@ -34,3 +34,8 @@
 {"timestamp": "2026-03-30T16:47:56.641787", "command": "task update --local-only", "task_id": "T1.6", "reason": "Completed during Mike session 2026-03-30, lifecycle bypassed"}
 {"timestamp": "2026-03-30T16:47:58.901031", "command": "task_done --allow-dirty", "task_id": "T1.7", "reason": "Uncommitted changes in working tree"}
 {"timestamp": "2026-03-30T16:47:58.913039", "command": "task update --local-only", "task_id": "T1.7", "reason": "Completed during Mike session 2026-03-30, lifecycle bypassed"}
+{"timestamp": "2026-04-01T16:31:49.956146", "command": "task_done --allow-dirty", "task_id": "UA2.1", "reason": "Uncommitted changes in working tree"}
+{"timestamp": "2026-04-01T16:31:54.683594", "command": "task_done --allow-dirty", "task_id": "UA2.1", "reason": "Uncommitted changes in working tree"}
+{"timestamp": "2026-04-01T16:48:59.716650", "command": "task_done --allow-dirty", "task_id": "UA2.3", "reason": "Uncommitted changes in working tree"}
+{"timestamp": "2026-04-01T16:49:19.341553", "command": "task_done --allow-dirty", "task_id": "UA2.3", "reason": "Uncommitted changes in working tree"}
+{"timestamp": "2026-04-01T16:49:25.286961", "command": "task_done --allow-dirty", "task_id": "UA2.3", "reason": "Uncommitted changes in working tree"}

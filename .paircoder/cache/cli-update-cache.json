@@ -46,5 +46,17 @@
   "CCSF.2": {
     "last_cli_update": "2026-03-31T14:22:11.416290",
     "last_status": "in_progress"
+  },
+  "UA2.1": {
+    "last_cli_update": "2026-04-01T16:31:54.807546",
+    "last_status": "done"
+  },
+  "UA2.2": {
+    "last_cli_update": "2026-04-01T16:32:21.117158",
+    "last_status": "in_progress"
+  },
+  "UA2.3": {
+    "last_cli_update": "2026-04-01T16:49:25.381918",
+    "last_status": "done"
   }
 }

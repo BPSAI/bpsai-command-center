@@ -1,13 +1,56 @@
 # Current State
 
-> Last updated: 2026-03-31
+> Last updated: 2026-04-01
 
-## Status: CC-S4 + CC-FIX + CC-S4-FIX Complete — 153 Tests
+## Status: UA-P2 Complete — 212 Tests
 
 ## Active Plan
 
-**Plan:** All plans complete
-**Current Sprint:** None active
+**Plan:** plan-2026-04-ua-phase2 — Unified Auth Phase 2
+**Type:** feature
+**Current Sprint:** UA-P2
+**Tasks:**
+- [x] UA2.1 — OAuth Login Flow (P0, 65cx) — done
+- [x] UA2.2 — License Link Prompt (P0, 40cx, depends: UA2.1) — done
+- [x] UA2.3 — Portal JWT for A2A Calls (P0, 40cx, depends: UA2.1) — done
+
+**Trello:** 3 cards synced to Planned/Ready
+
+## What Was Just Done
+
+- **UA2.3 done** (auto-updated by hook)
+
+- **UA2.3 Portal JWT for A2A Calls COMPLETE** (211→212 tests, +8 new, -7 removed) (2026-04-01)
+  - Rewrote `src/lib/a2a-auth.ts` — replaced operator-token fetch with synchronous portal JWT forwarding
+  - New: `getProxyAuth(request)` helper reads `cc_access_token` cookie, returns auth headers or 401
+  - Updated all 7 A2A proxy routes (feed, agents, metis, ack, sessions, sessions/[id], sessions/[id]/resume)
+  - Removed: `PAIRCODER_API_URL` and `LICENSE_ID` from `src/lib/config.ts`
+  - Production: 401 if no portal JWT cookie; Dev: proceeds with warning (no Bearer header)
+  - New test file: `tests/portal-jwt-proxy.test.ts` — JWT forwarding, 401 enforcement, dev fallback
+
+- **UA2.2 License Link Prompt COMPLETE** (184→211 tests, +27 new) (2026-04-01)
+  - New: `src/lib/license.ts` — `hasLicenseInJwt()`, `getLicenseStatusFromCookie()`, `linkLicense()`
+  - New: `POST /api/license/link` — proxies license key to bpsai-support `/users/me/license`
+  - New: `POST /api/auth/refresh-session` — force-refresh JWT and update all cookies
+  - New: `LicenseLinkModal` component — modal with license key input, submit, skip, error display
+  - Updated: middleware sets `cc_has_license` cookie on every auth'd request
+  - Updated: callback route sets `cc_has_license` after OAuth login
+  - Updated: logout clears `cc_has_license` cookie
+  - Updated: `page.tsx` shows LicenseLinkModal when no license_id in JWT
+
+- **UA2.1 done** (auto-updated by hook) (2026-04-01)
+
+- **UA2.1 OAuth Login Flow COMPLETE** (153→184 tests, +31 new)
+  - Replaced Basic Auth middleware with Zoho OAuth PKCE + portal JWT session cookies
+  - New: `src/lib/oauth.ts`, `src/lib/auth-middleware.ts`, `src/lib/auth-handlers.ts`
+  - Login page `/login`, callback `/auth/callback`, logout `/api/auth/logout`
+  - httpOnly secure cookies: access token (30min) + refresh token (12hr)
+  - Auto-refresh in middleware when token ≤2min from expiry
+  - Operator name from JWT `display_name` claim in header
+  - Removed: Basic Auth middleware, `AUTHORIZED_USERS` env var
+  - New env vars: `ZOHO_CLIENT_ID`, `SUPPORT_API_URL`
+
+- **UA-P2 Plan Created** — Unified Auth Phase 2: OAuth Login + License Link + Portal JWT
 
 ## What Was Just Done (2026-03-31)
 
@@ -29,13 +72,6 @@
 
 ## What's Next
 
-1. CC needs JWT integration — exchange Basic Auth for JWT, pass as Bearer to A2A (once A2A JWT auth is deployed)
-2. Branch protection setup (BPSAI/paircoder#121)
-3. CC-S5: potential features — daemon output streaming panel, structured standup, Unity Bridge API contract
+1. UA-P2 Sprint complete — all 3 tasks done (OAuth, License Link, Portal JWT)
+2. Ready for branch merge / PR creation
 
-```yaml
-project: bpsai-command-center
-status: complete
-tests: 153
-sprints_done: [CC-S1, CC-S2, CC-S3, CC-FIX, CC-S4, CC-S4-FIX]
-```

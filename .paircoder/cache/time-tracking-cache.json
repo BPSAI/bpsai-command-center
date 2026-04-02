@@ -13,10 +13,18 @@
     ],
     "total_seconds": 27315.30888
   },
-  "_active": {
-    "task_id": "CCSF.2",
-    "timer_id": "local-20260331142211",
-    "description": "CCSF.2: Test Coverage + Cleanup",
-    "start": "2026-03-31T14:22:11.590718"
+  "UA2.3": {
+    "entries": [
+      {
+        "id": "local-20260401164202",
+        "task_id": "UA2.3",
+        "description": "UA2.3: Portal JWT for A2A Calls",
+        "start": "2026-04-01T16:42:02.911653",
+        "end": "2026-04-01T16:49:25.970326",
+        "duration_seconds": 443.058673,
+        "provider_id": null
+      }
+    ],
+    "total_seconds": 443.058673
   }
 }

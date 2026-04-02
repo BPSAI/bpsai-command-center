@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { A2A_BASE_URL } from "@/lib/config";
-import { getA2AAuthHeaders } from "@/lib/a2a-auth";
+import { getProxyAuth } from "@/lib/a2a-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -12,12 +12,13 @@ interface RouteContext {
 
 export async function GET(request: NextRequest, context: RouteContext) {
   const { session_id } = await context.params;
-  const operator = request.headers.get("x-operator") ?? "";
+  const auth = getProxyAuth(request);
+  if ("error" in auth) return auth.error;
 
   try {
     const res = await fetch(`${A2A_BASE_URL}/sessions/${encodeURIComponent(session_id)}`, {
       cache: "no-store",
-      headers: await getA2AAuthHeaders(operator),
+      headers: auth.headers,
     });
 
     if (!res.ok) {
@@ -38,7 +39,8 @@ const PATCH_ALLOWED_FIELDS = new Set(["status"]);
 
 export async function PATCH(request: NextRequest, context: RouteContext) {
   const { session_id } = await context.params;
-  const operator = request.headers.get("x-operator") ?? "";
+  const auth = getProxyAuth(request);
+  if ("error" in auth) return auth.error;
 
   let body: Record<string, unknown>;
   try {
@@ -70,13 +72,12 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   }
 
   try {
-    const authHeaders = await getA2AAuthHeaders(operator);
     const res = await fetch(`${A2A_BASE_URL}/sessions/${encodeURIComponent(session_id)}`, {
       method: "PATCH",
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
-        ...authHeaders,
+        ...auth.headers,
       },
       body: JSON.stringify(filtered),
     });

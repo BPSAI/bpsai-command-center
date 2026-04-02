@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { A2A_BASE_URL } from "@/lib/config";
-import { getA2AAuthHeaders } from "@/lib/a2a-auth";
+import { getProxyAuth } from "@/lib/a2a-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +17,9 @@ function buildSessionsUrl(
 }
 
 export async function GET(request: NextRequest) {
+  const auth = getProxyAuth(request);
+  if ("error" in auth) return auth.error;
+
   const operator = request.headers.get("x-operator") ?? "";
   const { searchParams } = request.nextUrl;
 
@@ -29,7 +32,7 @@ export async function GET(request: NextRequest) {
   try {
     const res = await fetch(upstreamUrl, {
       cache: "no-store",
-      headers: await getA2AAuthHeaders(operator),
+      headers: auth.headers,
     });
 
     if (!res.ok) {
