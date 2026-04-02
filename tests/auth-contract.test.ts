@@ -210,8 +210,8 @@ describe("contract: middleware auto-refresh", () => {
   });
 
   it("threshold boundary: 121s allows through", async () => {
-    const token = makeJwt(PORTAL_CLAIMS, 121);
     const { evaluateAuth } = await import("@/lib/auth-middleware");
+    const token = makeJwt(PORTAL_CLAIMS, 121);
     const result = evaluateAuth({
       pathname: "/dashboard",
       accessToken: token,
