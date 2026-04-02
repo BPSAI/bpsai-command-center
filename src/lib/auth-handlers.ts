@@ -41,8 +41,9 @@ export async function handleCallback(params: {
   });
 
   // Step 2: Exchange Zoho token for portal JWT session
+  // Prefer id_token (JWT, validated via JWKS) over access_token (opaque, requires userinfo call)
   const portalSession = await exchangeForPortalSession(
-    zohoTokens.access_token,
+    zohoTokens.id_token || zohoTokens.access_token,
   );
 
   return {
