@@ -2,20 +2,37 @@
   "task_types": {
     "feature": {
       "task_type": "feature",
-      "sample_count": 26,
-      "avg_tokens": 2024.4615384615386,
-      "std_dev": 7115.210690597829,
+      "sample_count": 27,
+      "avg_tokens": 2643.185185185185,
+      "std_dev": 7661.884271857418,
       "p80_tokens": 0.0,
-      "avg_duration_seconds": 86.73076923076923,
-      "success_rate": 0.5769230769230769,
+      "avg_duration_seconds": 100.81481481481481,
+      "success_rate": 0.5925925925925926,
       "recommended_model": "haiku",
       "model": "aggregate",
       "recommended_effort": "high",
-      "_m2_tokens": 1316281802.4615386,
-      "_m2_duration": 1161331.1153846153,
+      "_m2_tokens": 1585020706.074074,
+      "_m2_duration": 1300580.0740740742,
       "estimation_mape": null,
       "estimation_sample_count": 0,
-      "cx_per_minute": 1.3733671235233509
+      "cx_per_minute": 1.3556530135938414
+    },
+    "feature:claude-opus-4-6[1m]": {
+      "task_type": "feature",
+      "sample_count": 3,
+      "avg_tokens": 23788.666666666668,
+      "std_dev": 5031.642364962844,
+      "p80_tokens": 27184.800000000003,
+      "avg_duration_seconds": 590.3333333333334,
+      "success_rate": 1.0,
+      "recommended_model": "sonnet",
+      "model": "claude-opus-4-6[1m]",
+      "recommended_effort": "high",
+      "_m2_tokens": 75952274.66666666,
+      "_m2_duration": 32616.666666666668,
+      "estimation_mape": null,
+      "estimation_sample_count": 0,
+      "cx_per_minute": 1.3259247568077315
     },
     "feature:unknown": {
       "task_type": "feature",
@@ -33,23 +50,6 @@
       "estimation_mape": null,
       "estimation_sample_count": 0,
       "cx_per_minute": null
-    },
-    "feature:claude-opus-4-6[1m]": {
-      "task_type": "feature",
-      "sample_count": 2,
-      "avg_tokens": 26318.0,
-      "std_dev": 4334.0,
-      "p80_tokens": 28918.4,
-      "avg_duration_seconds": 652.0,
-      "success_rate": 1.0,
-      "recommended_model": "sonnet",
-      "model": "claude-opus-4-6[1m]",
-      "recommended_effort": "high",
-      "_m2_tokens": 37567112.0,
-      "_m2_duration": 9800.0,
-      "estimation_mape": null,
-      "estimation_sample_count": 0,
-      "cx_per_minute": 1.3464888482736956
     },
     "feature:headless": {
       "task_type": "feature",
@@ -69,6 +69,6 @@
       "cx_per_minute": 1.4002453987730061
     }
   },
-  "last_calibrated": "2026-04-01T20:49:38.108871+00:00",
-  "total_records": 26
+  "last_calibrated": "2026-04-02T16:39:45.464243+00:00",
+  "total_records": 27
 }

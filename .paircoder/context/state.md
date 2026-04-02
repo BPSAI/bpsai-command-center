@@ -1,22 +1,41 @@
 # Current State
 
-> Last updated: 2026-04-01
+> Last updated: 2026-04-02
 
-## Status: UA-P2 Complete — 212 Tests
+## Status: UAT-CC Complete — 239 Tests
 
 ## Active Plan
 
-**Plan:** plan-2026-04-ua-phase2 — Unified Auth Phase 2
-**Type:** feature
-**Current Sprint:** UA-P2
+**Plan:** plan-2026-04-uat-cc-contract-tests — CC Auth Contract Tests
+**Type:** chore
+**Current Sprint:** UAT-CC
 **Tasks:**
-- [x] UA2.1 — OAuth Login Flow (P0, 65cx) — done
-- [x] UA2.2 — License Link Prompt (P0, 40cx, depends: UA2.1) — done
-- [x] UA2.3 — Portal JWT for A2A Calls (P0, 40cx, depends: UA2.1) — done
+- [x] UAT1.2 — CC Auth Contract Tests (P0, 10cx) — done
 
-**Trello:** 3 cards synced to Planned/Ready
+**Trello:** 1 card synced to Intake/Backlog
+
+## Previous Plan (Complete)
+
+**Plan:** plan-2026-04-ua-phase2 — Unified Auth Phase 2
+- [x] UA2.1 — OAuth Login Flow (P0, 65cx) — done
+- [x] UA2.2 — License Link Prompt (P0, 40cx) — done
+- [x] UA2.3 — Portal JWT for A2A Calls (P0, 40cx) — done
 
 ## What Was Just Done
+
+- **UAT1.2 CC Auth Contract Tests COMPLETE** (212→239 tests, +27 new) (2026-04-02)
+  - New test file: `tests/auth-contract.test.ts` — 27 contract tests across 10 describe blocks
+  - Fixtures: mock portal-session (org_id, license_id, operator, tier claims), portal-refresh, A2A sessions
+  - Verified: callback is POST-only (not GET), httpOnly cookie with 30min maxAge, refresh cookie 12hr maxAge
+  - Verified: middleware auto-refresh at 2min threshold (boundary: 120s refresh, 121s allow)
+  - Verified: proxy routes (agents, sessions, ack) forward Bearer token to A2A
+  - Verified: sessions scoped by server-set x-operator header, client query param override blocked
+  - Verified: resume returns 403 for non-owner operator
+  - Verified: missing license_id → cc_has_license=0, present → cc_has_license=1
+  - Verified: license link sends raw portal JWT (sub without zoho: prefix)
+  - Verified: unauthenticated requests redirected to /login
+  - Verified: /api/auth/login, /api/auth/callback, /api/auth/logout in PUBLIC_PATHS
+  - All 14 acceptance criteria covered, arch check clean (580 lines < 600 limit)
 
 - **UA2.3 done** (auto-updated by hook)
 
@@ -51,6 +70,8 @@
   - New env vars: `ZOHO_CLIENT_ID`, `SUPPORT_API_URL`
 
 - **UA-P2 Plan Created** — Unified Auth Phase 2: OAuth Login + License Link + Portal JWT
+- Created plan: plan-2026-04-plan-2026-04-uat-cc-contract-tests (CC Auth Contract Tests)
+
 
 ## What Was Just Done (2026-03-31)
 
@@ -72,6 +93,6 @@
 
 ## What's Next
 
-1. UA-P2 Sprint complete — all 3 tasks done (OAuth, License Link, Portal JWT)
-2. Ready for branch merge / PR creation
+1. UAT1.2 complete — all contract tests passing
+2. Ready for next sprint planning or PR
 
