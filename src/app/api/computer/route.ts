@@ -146,6 +146,12 @@ export async function POST(request: Request) {
 
   // Extract auth context for dispatch tool
   const operator = request.headers.get("x-operator") ?? "";
+  if (!operator) {
+    return Response.json(
+      { error: "Missing operator identity. Please log in." },
+      { status: 401 },
+    );
+  }
   const cookieHeader = request.headers.get("cookie") ?? "";
   const jwtMatch = cookieHeader.match(/cc_access_token=([^;]+)/);
   const portalJwt = jwtMatch?.[1];

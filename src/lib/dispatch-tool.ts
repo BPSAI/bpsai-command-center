@@ -5,8 +5,7 @@
  * The daemon on the target machine decides orchestration details.
  */
 
-const getA2ABaseUrl = () =>
-  process.env.A2A_BASE_URL ?? "https://a2a.paircoder.ai";
+import { A2A_BASE_URL } from "@/lib/config";
 
 const getDefaultWorkspace = () =>
   process.env.DEFAULT_WORKSPACE ?? "default";
@@ -58,7 +57,7 @@ export async function handleDispatch(
   input: DispatchInput,
 ): Promise<DispatchResult> {
   const workspace = input.workspace ?? getDefaultWorkspace();
-  const url = `${getA2ABaseUrl()}/dispatch`;
+  const url = `${A2A_BASE_URL}/dispatch`;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
