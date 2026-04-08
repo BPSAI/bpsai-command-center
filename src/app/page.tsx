@@ -7,7 +7,8 @@ import ComputerChat from "@/app/components/ComputerChat";
 import NotificationCenter from "@/app/components/NotificationCenter";
 import StandupView from "@/app/components/StandupView";
 import SessionCatalog from "@/app/components/SessionCatalog";
-import { getOperatorFromCookie } from "@/lib/use-operator";
+import { getOperatorFromCookie, getOperatorIdFromCookie } from "@/lib/use-operator";
+import OperatorIdDisplay from "@/app/components/OperatorIdDisplay";
 import { getLicenseStatusFromCookie } from "@/lib/license";
 import LicenseLinkModal from "@/app/components/LicenseLinkModal";
 
@@ -25,10 +26,12 @@ type PanelId = (typeof PANELS)[number]["id"];
 export default function Home() {
   const [activePanel, setActivePanel] = useState<PanelId>("feed");
   const [operator, setOperator] = useState("");
+  const [operatorId, setOperatorId] = useState("");
   const [hasLicense, setHasLicense] = useState(true); // default true to avoid flash
 
   useEffect(() => {
     setOperator(getOperatorFromCookie());
+    setOperatorId(getOperatorIdFromCookie());
     setHasLicense(getLicenseStatusFromCookie());
   }, []);
 
@@ -56,6 +59,7 @@ export default function Home() {
               <span className="text-accent" title="Operator">
                 OP: {operator.toUpperCase()}
               </span>
+              <OperatorIdDisplay operatorId={operatorId} />
               <button
                 onClick={handleLogout}
                 className="text-foreground/40 hover:text-error transition-colors uppercase tracking-wider"

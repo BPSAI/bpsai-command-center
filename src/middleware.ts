@@ -72,6 +72,14 @@ export async function middleware(request: NextRequest) {
         secure: isProduction,
         maxAge: ACCESS_TOKEN_MAX_AGE,
       });
+      // Operator ID cookie for client JS (from JWT operator claim)
+      response.cookies.set("cc_operator_id", result.operatorId, {
+        path: "/",
+        httpOnly: false,
+        sameSite: "lax",
+        secure: isProduction,
+        maxAge: ACCESS_TOKEN_MAX_AGE,
+      });
       // License status cookie for client JS
       response.cookies.set(
         "cc_has_license",
@@ -86,6 +94,7 @@ export async function middleware(request: NextRequest) {
       response.cookies.set(ACCESS_TOKEN_COOKIE, "", { maxAge: 0, path: "/" });
       response.cookies.set(REFRESH_TOKEN_COOKIE, "", { maxAge: 0, path: "/" });
       response.cookies.set("operator", "", { maxAge: 0, path: "/" });
+      response.cookies.set("cc_operator_id", "", { maxAge: 0, path: "/" });
       response.cookies.set("cc_has_license", "", { maxAge: 0, path: "/" });
       return response;
     }
@@ -100,6 +109,14 @@ export async function middleware(request: NextRequest) {
   });
   // Keep operator cookie in sync for client JS
   response.cookies.set("operator", result.operator, {
+    path: "/",
+    httpOnly: false,
+    sameSite: "lax",
+    secure: isProduction,
+    maxAge: ACCESS_TOKEN_MAX_AGE,
+  });
+  // Operator ID cookie for client JS (from JWT operator claim)
+  response.cookies.set("cc_operator_id", result.operatorId, {
     path: "/",
     httpOnly: false,
     sameSite: "lax",

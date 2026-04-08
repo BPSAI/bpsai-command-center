@@ -50,6 +50,14 @@ export async function POST() {
       secure: isProduction,
     });
 
+    // Update operator ID cookie (from JWT operator claim)
+    cookieStore.set("cc_operator_id", (claims?.operator as string) ?? "", {
+      path: "/",
+      httpOnly: false,
+      sameSite: "lax",
+      secure: isProduction,
+    });
+
     // Set license status cookie
     const licensed = hasLicenseInJwt(session.access_token);
     cookieStore.set("cc_has_license", licensed ? "1" : "0", {

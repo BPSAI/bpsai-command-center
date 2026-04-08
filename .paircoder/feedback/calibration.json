@@ -2,37 +2,37 @@
   "task_types": {
     "feature": {
       "task_type": "feature",
-      "sample_count": 27,
-      "avg_tokens": 2643.185185185185,
-      "std_dev": 7661.884271857418,
+      "sample_count": 28,
+      "avg_tokens": 2549.6071428571427,
+      "std_dev": 7539.517047526916,
       "p80_tokens": 0.0,
-      "avg_duration_seconds": 100.81481481481481,
-      "success_rate": 0.5925925925925926,
+      "avg_duration_seconds": 115.75,
+      "success_rate": 0.6071428571428571,
       "recommended_model": "haiku",
       "model": "aggregate",
       "recommended_effort": "high",
-      "_m2_tokens": 1585020706.074074,
-      "_m2_duration": 1300580.0740740742,
+      "_m2_tokens": 1591640884.6785717,
+      "_m2_duration": 1469213.2499999998,
       "estimation_mape": null,
       "estimation_sample_count": 0,
-      "cx_per_minute": 1.3556530135938414
+      "cx_per_minute": 1.3223890720218427
     },
     "feature:claude-opus-4-6[1m]": {
       "task_type": "feature",
-      "sample_count": 3,
-      "avg_tokens": 23788.666666666668,
-      "std_dev": 5031.642364962844,
-      "p80_tokens": 27184.800000000003,
-      "avg_duration_seconds": 590.3333333333334,
+      "sample_count": 4,
+      "avg_tokens": 17847.25,
+      "std_dev": 11175.391030630652,
+      "p80_tokens": 25451.200000000004,
+      "avg_duration_seconds": 572.5,
       "success_rate": 1.0,
-      "recommended_model": "sonnet",
+      "recommended_model": "haiku",
       "model": "claude-opus-4-6[1m]",
       "recommended_effort": "high",
-      "_m2_tokens": 75952274.66666666,
-      "_m2_duration": 32616.666666666668,
+      "_m2_tokens": 499557458.75000006,
+      "_m2_duration": 36433.0,
       "estimation_mape": null,
       "estimation_sample_count": 0,
-      "cx_per_minute": 1.3259247568077315
+      "cx_per_minute": 1.283460908646261
     },
     "feature:unknown": {
       "task_type": "feature",
@@ -69,6 +69,6 @@
       "cx_per_minute": 1.4002453987730061
     }
   },
-  "last_calibrated": "2026-04-02T16:39:45.464243+00:00",
-  "total_records": 27
+  "last_calibrated": "2026-04-08T04:01:19.540116+00:00",
+  "total_records": 28
 }
