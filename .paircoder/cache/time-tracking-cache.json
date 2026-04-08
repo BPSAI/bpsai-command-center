@@ -27,10 +27,18 @@
     ],
     "total_seconds": 443.058673
   },
-  "_active": {
-    "task_id": "UAT1.2",
-    "timer_id": "local-20260402123118",
-    "description": "UAT1.2: CC Auth Contract Tests",
-    "start": "2026-04-02T12:31:18.703158"
+  "CCD.3": {
+    "entries": [
+      {
+        "id": "local-20260408000914",
+        "task_id": "CCD.3",
+        "description": "CCD.3: Computer system prompt with fleet awareness",
+        "start": "2026-04-08T00:09:14.955639",
+        "end": "2026-04-08T00:12:32.976820",
+        "duration_seconds": 198.021181,
+        "provider_id": null
+      }
+    ],
+    "total_seconds": 198.021181
   }
 }

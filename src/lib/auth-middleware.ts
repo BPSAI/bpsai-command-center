@@ -15,8 +15,8 @@ export const REFRESH_THRESHOLD_SEC = 120;
 
 export type AuthAction =
   | { action: "skip" }
-  | { action: "allow"; operator: string }
-  | { action: "refresh"; operator: string }
+  | { action: "allow"; operator: string; operatorId: string }
+  | { action: "refresh"; operator: string; operatorId: string }
   | { action: "redirect_login" };
 
 export function evaluateAuth(params: {
@@ -44,16 +44,17 @@ export function evaluateAuth(params: {
 
   const operator =
     claims.display_name || claims.email || claims.sub || "unknown";
+  const operatorId = (claims.operator as string) ?? "";
   const now = Math.floor(Date.now() / 1000);
   const expiresIn = claims.exp - now;
 
   // Expired or near-expiry
   if (expiresIn <= REFRESH_THRESHOLD_SEC) {
     if (refreshToken) {
-      return { action: "refresh", operator };
+      return { action: "refresh", operator, operatorId };
     }
     return { action: "redirect_login" };
   }
 
-  return { action: "allow", operator };
+  return { action: "allow", operator, operatorId };
 }

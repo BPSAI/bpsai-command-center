@@ -166,6 +166,7 @@ export interface JwtClaims {
   display_name: string;
   email: string;
   roles?: string[];
+  operator?: string;
   exp: number;
   [key: string]: unknown;
 }

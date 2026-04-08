@@ -72,6 +72,15 @@ export async function POST(request: NextRequest) {
       maxAge: ACCESS_TOKEN_MAX_AGE,
     });
 
+    // Set operator ID cookie for client JS (from JWT operator claim)
+    cookieStore.set("cc_operator_id", (claims?.operator as string) ?? "", {
+      path: "/",
+      httpOnly: false,
+      sameSite: "lax",
+      secure: isProduction,
+      maxAge: ACCESS_TOKEN_MAX_AGE,
+    });
+
     // Set license status cookie for client JS
     cookieStore.set(
       "cc_has_license",
