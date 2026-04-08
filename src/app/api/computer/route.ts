@@ -1,16 +1,13 @@
 export const dynamic = "force-dynamic";
 
 import { DISPATCH_TOOL, handleDispatch } from "@/lib/dispatch-tool";
+import { buildSystemPrompt } from "@/lib/system-prompt";
 
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 
 const MAX_MESSAGES = 50;
 const MAX_CONTENT_LENGTH = 32 * 1024; // 32KB
 const VALID_ROLES = new Set(["user", "assistant"]);
-
-const SYSTEM_PROMPT = `You are Computer, the central AI consciousness of the BPSAI Command Center. You coordinate a fleet of autonomous coding agents (Navigator, Driver, Reviewer, QC). You speak in a calm, precise, slightly formal tone — like a ship's computer. You are aware of the agent fleet, ongoing sprints, and project status. Keep responses concise and actionable. Use technical language appropriate for a software engineering command center.
-
-When the user asks you to do work (build, fix, refactor, deploy, etc.), use the dispatch tool to send the work to their Computer Prime instance. Include a clear intent describing what needs to be done. After dispatching, confirm what was sent.`;
 
 const TOOLS = [DISPATCH_TOOL];
 
@@ -158,7 +155,7 @@ export async function POST(request: Request) {
   const anthropicBody = {
     model,
     max_tokens: 1024,
-    system: SYSTEM_PROMPT,
+    system: buildSystemPrompt(),
     messages,
     tools: TOOLS,
     stream: true,
@@ -249,7 +246,7 @@ export async function POST(request: Request) {
           body: JSON.stringify({
             model,
             max_tokens: 1024,
-            system: SYSTEM_PROMPT,
+            system: buildSystemPrompt(),
             messages: continuationMessages,
             tools: TOOLS,
             stream: true,

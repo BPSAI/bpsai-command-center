@@ -2,41 +2,24 @@
   "task_types": {
     "feature": {
       "task_type": "feature",
-      "sample_count": 29,
-      "avg_tokens": 2913.3793103448274,
-      "std_dev": 7654.372198467709,
+      "sample_count": 32,
+      "avg_tokens": 3027.03125,
+      "std_dev": 7510.857426437639,
       "p80_tokens": 0.0,
-      "avg_duration_seconds": 122.51724137931035,
-      "success_rate": 0.6206896551724138,
+      "avg_duration_seconds": 122.75,
+      "success_rate": 0.625,
       "recommended_model": "haiku",
       "model": "aggregate",
       "recommended_effort": "high",
-      "_m2_tokens": 1699092998.8275862,
-      "_m2_duration": 1506399.2413793101,
+      "_m2_tokens": 1805215336.96875,
+      "_m2_duration": 1600166.0,
       "estimation_mape": null,
       "estimation_sample_count": 0,
-      "cx_per_minute": 1.4082016221725684
-    },
-    "feature:claude-opus-4-6[1m]": {
-      "task_type": "feature",
-      "sample_count": 5,
-      "avg_tokens": 16897.6,
-      "std_dev": 10174.420486691122,
-      "p80_tokens": 23717.600000000002,
-      "avg_duration_seconds": 520.4,
-      "success_rate": 1.0,
-      "recommended_model": "haiku",
-      "model": "claude-opus-4-6[1m]",
-      "recommended_effort": "high",
-      "_m2_tokens": 517594161.20000005,
-      "_m2_duration": 90721.19999999998,
-      "estimation_mape": null,
-      "estimation_sample_count": 0,
-      "cx_per_minute": 1.4113841115323935
+      "cx_per_minute": 1.3321764194009973
     },
     "feature:unknown": {
       "task_type": "feature",
-      "sample_count": 22,
+      "sample_count": 24,
       "avg_tokens": 0.0,
       "std_dev": 0.0,
       "p80_tokens": 0.0,
@@ -50,6 +33,23 @@
       "estimation_mape": null,
       "estimation_sample_count": 0,
       "cx_per_minute": null
+    },
+    "feature:claude-opus-4-6[1m]": {
+      "task_type": "feature",
+      "sample_count": 6,
+      "avg_tokens": 16144.166666666666,
+      "std_dev": 9439.491642679823,
+      "p80_tokens": 21984.0,
+      "avg_duration_seconds": 496.1666666666667,
+      "success_rate": 1.0,
+      "recommended_model": "haiku",
+      "model": "claude-opus-4-6[1m]",
+      "recommended_effort": "high",
+      "_m2_tokens": 534624014.8333334,
+      "_m2_duration": 108338.83333333331,
+      "estimation_mape": null,
+      "estimation_sample_count": 0,
+      "cx_per_minute": 1.309486759610328
     },
     "feature:headless": {
       "task_type": "feature",
@@ -69,6 +69,6 @@
       "cx_per_minute": 1.4002453987730061
     }
   },
-  "last_calibrated": "2026-04-08T04:07:35.341361+00:00",
-  "total_records": 29
+  "last_calibrated": "2026-04-08T04:12:48.732375+00:00",
+  "total_records": 32
 }

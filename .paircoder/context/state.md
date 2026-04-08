@@ -2,7 +2,7 @@
 
 > Last updated: 2026-04-08
 
-## Status: CCD.2 Complete — Dispatch Results in Activity Feed
+## Status: CCD.3 Complete — Computer System Prompt with Fleet Awareness
 
 ## Active Plan
 
@@ -22,6 +22,14 @@
 - [x] UA2.3 — Portal JWT for A2A Calls (P0, 40cx) — done
 
 ## What Was Just Done
+
+- **CCD.3 done** (auto-updated by hook)
+
+- **CCD.3 Computer System Prompt with Fleet Awareness COMPLETE** (266→278 tests, +12 new) (2026-04-08)
+  - New: `src/lib/system-prompt.ts` — `buildSystemPrompt()` builder with fleet awareness, workspace context, confirmation flow
+  - Updated: `src/app/api/computer/route.ts` — replaced static `SYSTEM_PROMPT` with `buildSystemPrompt()` call
+  - New: `tests/system-prompt.test.ts` — 12 tests: dispatch explanation, workspace context (env/override/fallback), user guidance, confirmation flow, core personality, route integration
+  - System prompt now explains Computer Prime architecture, includes workspace from `DEFAULT_WORKSPACE` env var, guides users through natural language dispatch, and instructs confirmation before tool call
 
 - **CCD.2 Dispatch Results in Activity Feed COMPLETE** (239→266 tests, +27 new) (2026-04-08)
   - New: `src/app/lib/dispatch-feed.ts` — extracted dispatch rendering helpers (parseDispatch, parseDispatchResult, parseDispatchAck, renderDispatchContent, isDispatchType)
@@ -103,6 +111,6 @@
 
 ## What's Next
 
-1. UAT1.2 complete — all contract tests passing
-2. Ready for next sprint planning or PR
+1. CCD sprint (CCD.1, CCD.2, CCD.3) complete — ready for PR or next sprint planning
+2. UAT1.2 complete — all contract tests passing
 
