@@ -2,6 +2,7 @@
 
 import { useRef, useState, useCallback } from "react";
 import { useFeedMessages, type FeedMessage } from "../lib/feed";
+import { renderDispatchContent, isDispatchType } from "../lib/dispatch-feed";
 import { formatTime } from "../lib/format";
 
 const SEVERITY_COLORS: Record<string, string> = {
@@ -18,38 +19,15 @@ const SEVERITY_TEXT: Record<string, string> = {
   info: "text-accent",
 };
 
+/** Dispatch type badge labels and colors */
+const DISPATCH_BADGE: Record<string, { label: string; cls: string }> = {
+  dispatch: { label: "⚡ DISPATCH", cls: "bg-accent/30 text-accent" },
+  "dispatch-result": { label: "✓ RESULT", cls: "bg-success/30 text-success" },
+  "dispatch-ack": { label: "⟳ RUNNING", cls: "bg-warning/30 text-warning" },
+};
+
 function shortId(id: string): string {
   return id.slice(0, 8);
-}
-
-/** Parse dispatch content — structured JSON or plain text */
-function parseDispatch(content: string): { agent: string; target: string; prompt: string } | null {
-  try {
-    const parsed = JSON.parse(content);
-    if ("agent" in parsed && "target" in parsed && "prompt" in parsed) {
-      return parsed;
-    }
-  } catch { /* plain text */ }
-  return null;
-}
-
-/** Parse dispatch-result content */
-function parseDispatchResult(content: string): {
-  success: boolean;
-  output: string;
-  dispatchId: string;
-} | null {
-  try {
-    const parsed = JSON.parse(content);
-    if ("success" in parsed && "output" in parsed) {
-      return {
-        success: parsed.success,
-        output: parsed.output ?? "",
-        dispatchId: parsed.dispatch_id ?? "",
-      };
-    }
-  } catch { /* not JSON */ }
-  return null;
 }
 
 /** Render human-readable content for a message */
@@ -59,31 +37,8 @@ function renderContent(msg: FeedMessage): {
   color: string;
   refId: string | null;
 } {
-  if (msg.type === "dispatch") {
-    const parsed = parseDispatch(msg.content);
-    if (parsed) {
-      return {
-        summary: `Dispatch ${parsed.agent} → ${parsed.target}: ${parsed.prompt}`,
-        detail: `Agent: ${parsed.agent}\nTarget: ${parsed.target}\nPrompt: ${parsed.prompt}`,
-        color: "text-accent",
-        refId: null,
-      };
-    }
-    return { summary: msg.content, detail: null, color: "text-accent", refId: null };
-  }
-
-  if (msg.type === "dispatch-result") {
-    const parsed = parseDispatchResult(msg.content);
-    if (parsed) {
-      return {
-        summary: parsed.success ? "Dispatch complete" : "Dispatch failed",
-        detail: parsed.output,
-        color: parsed.success ? "text-success" : "text-danger",
-        refId: parsed.dispatchId || null,
-      };
-    }
-    return { summary: msg.content, detail: null, color: "text-foreground/60", refId: null };
-  }
+  const dispatchRendered = renderDispatchContent(msg);
+  if (dispatchRendered) return dispatchRendered;
 
   return {
     summary: msg.content,
@@ -225,7 +180,7 @@ export default function ActivityFeed() {
             <div
               key={msg.id}
               id={`msg-${msg.id}`}
-              className={`py-1.5 border-b border-panel-border/30 last:border-0 transition-all duration-500 ${hasDetail ? "cursor-pointer" : ""}`}
+              className={`py-1.5 border-b border-panel-border/30 last:border-0 transition-all duration-500 ${hasDetail ? "cursor-pointer" : ""} ${isDispatchType(msg.type) ? "border-l-2 border-l-accent/40 pl-2" : ""}`}
               onMouseEnter={(e) => handleMouseEnter(e, msg.id, rendered.detail)}
               onMouseLeave={handleMouseLeave}
             >
@@ -233,11 +188,19 @@ export default function ActivityFeed() {
                 <span className="text-[10px] text-foreground/30 shrink-0 tabular-nums pt-0.5">
                   {formatTime(msg.timestamp, true)}
                 </span>
-                <span
-                  className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 font-semibold uppercase ${SEVERITY_COLORS[msg.severity] ?? "bg-foreground/10 text-foreground/50"}`}
-                >
-                  {msg.severity}
-                </span>
+                {DISPATCH_BADGE[msg.type] ? (
+                  <span
+                    className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 font-semibold uppercase ${DISPATCH_BADGE[msg.type].cls}`}
+                  >
+                    {DISPATCH_BADGE[msg.type].label}
+                  </span>
+                ) : (
+                  <span
+                    className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 font-semibold uppercase ${SEVERITY_COLORS[msg.severity] ?? "bg-foreground/10 text-foreground/50"}`}
+                  >
+                    {msg.severity}
+                  </span>
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="text-[10px] text-foreground/40 mb-0.5">
                     <span className="text-accent">{msg.from}</span>
