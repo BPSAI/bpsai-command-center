@@ -145,7 +145,10 @@ export async function POST(request: Request) {
   }
 
   // Extract auth context for dispatch tool
-  const operator = request.headers.get("x-operator") ?? "";
+  // Use operator_id (e.g., "mike-87e76cf3") for routing, not display name
+  const cookieStr = request.headers.get("cookie") ?? "";
+  const operatorIdMatch = cookieStr.match(/cc_operator_id=([^;]+)/);
+  const operator = operatorIdMatch?.[1] ?? request.headers.get("x-operator") ?? "";
   if (!operator) {
     return Response.json(
       { error: "Missing operator identity. Please log in." },
