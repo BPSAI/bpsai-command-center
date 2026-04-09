@@ -57,7 +57,7 @@ export async function handleDispatch(
   input: DispatchInput,
 ): Promise<DispatchResult> {
   const workspace = input.workspace ?? getDefaultWorkspace();
-  const url = `${A2A_BASE_URL}/dispatch`;
+  const url = `${A2A_BASE_URL}/messages`;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -73,9 +73,13 @@ export async function handleDispatch(
       headers,
       body: JSON.stringify({
         type: "dispatch",
+        from_project: "command-center",
+        to_project: "computer",
+        content: input.intent,
+        severity: "info",
         operator: input.operator,
         workspace,
-        intent: input.intent,
+        metadata: { source: "cc-dispatch" },
       }),
     });
 
